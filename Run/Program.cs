@@ -15,13 +15,6 @@ namespace Run
         public int I2 { get; set; }
     }
 
-    [StructLayout(LayoutKind.Sequential,CharSet = CharSet.Ansi)]
-    internal  unsafe ref struct Test2
-    {
-        public int I1 { get; set; }
-        public byte* Str { get; set; }
-    }
-
     internal class CTest
     {
         public int I1 { get; set; }
@@ -37,13 +30,37 @@ namespace Run
 
             HeapManager.Init(WindowsPrivateHeapIndirect.Create);
             var localHeap = HeapManager.SetLocalHeap(new ProcessHeap());
-            
-            var list = new List<Test>();
-            var uarray = new RefArray<Test>(100000000);
-            
+
+            var array = new Test[2]
+            {
+                new Test()
+                {
+                    I1 = 1000,
+                    I2 = 2000
+                },
+                new Test()
+                {
+                    I1 = 4000,
+                    I2 = 5000
+                }
+            };
+            var uarray = new RefArray<Test>(array,100000000);
+            uarray.Add(new Test()
+            {
+                I1 = 100,
+                I2 = 102
+            });
+            uarray.Add(new Test()
+            {
+                I1 = 200,
+                I2 = 202
+            });
+            var t1 = uarray[0];
+            var t2 = uarray[1];
+
             Console.WriteLine($"Local heap is current: {localHeap.Equals(HeapManager.Current)}");
             watch.Start();
-            for (int i = 0; i < 100000000; i++)
+            for (int i = uarray.LastIndex+1; i < uarray.Length; i++)
             {
                 uarray.Add(new Test());
 

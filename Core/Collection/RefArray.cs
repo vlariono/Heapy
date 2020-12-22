@@ -12,15 +12,41 @@ namespace Heapy.Core.Collection
         private readonly int _length;
 
         private bool _disposed;
-        private int _free;
+        private int _lastIndex;
 
         public RefArray(int length) : this()
         {
             _length = length;
-            _free = length;
+            _lastIndex = -1;
             _heap = HeapManager.Current;
 
-            _ptr = (TItem*)(IntPtr)Heap.Alloc<TItem>((uint)(sizeof(TItem) * length));
+            _ptr = (TItem*)(IntPtr)Heap.Alloc<TItem>((uint)(sizeof(TItem) * _length));
+        }
+
+        public RefArray(TItem[] items) : this()
+        {
+            _length = items.Length;
+            _lastIndex = items.Length-1;
+            _heap = HeapManager.Current;
+
+            _ptr = (TItem*)(IntPtr)Heap.Alloc<TItem>((uint)(sizeof(TItem) * _length));
+
+            var spanSource = new Span<TItem>(items);
+            var spanDestination = new Span<TItem>(_ptr, items.Length);
+            spanSource.CopyTo(spanDestination);
+        }
+
+        public RefArray(TItem[] items, int length) : this()
+        {
+            _length = items.Length + length;
+            _lastIndex = items.Length-1;
+            _heap = HeapManager.Current;
+
+            _ptr = (TItem*)(IntPtr)Heap.Alloc<TItem>((uint)(sizeof(TItem) * _length));
+
+            var spanSource = new Span<TItem>(items);
+            var spanDestination = new Span<TItem>(_ptr, items.Length);
+            spanSource.CopyTo(spanDestination);
         }
 
         public IntPtr Ptr
@@ -30,7 +56,7 @@ namespace Heapy.Core.Collection
         }
 
         public TItem Last => _ptr[LastIndex];
-        public int LastIndex => Length - Free;
+        public int LastIndex => _lastIndex;
 
         public UnmanagedState State => _disposed || Ptr == IntPtr.Zero || Heap.State != UnmanagedState.Available
                                 ? UnmanagedState.Unavailable
@@ -48,13 +74,11 @@ namespace Heapy.Core.Collection
             init => _length = value;
         }
 
-        public int Free => _free;
-
         public ref TItem this[int index]
         {
             get
             {
-                if (0 > index || index > _length - _free)
+                if (0 > index || index > _lastIndex)
                 {
                     throw new IndexOutOfRangeException();
                 }
@@ -65,13 +89,13 @@ namespace Heapy.Core.Collection
 
         public void Add(TItem item)
         {
-            if (LastIndex >= _length)
+            var position = _lastIndex + 1;
+            if (position >= _length)
             {
                 throw new ArgumentOutOfRangeException(nameof(item), "Array is full");
             }
-
-            _ptr[LastIndex] = item;
-            _free--;
+            _ptr[position] = item;
+            _lastIndex = position;
         }
 
         public void Dispose()
