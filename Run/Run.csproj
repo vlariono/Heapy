@@ -1,0 +1,24 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+
+  <ItemGroup>
+    <ProjectReference Include="..\Core\Heapy.Core.csproj" />
+    <ProjectReference Include="..\GeneralHeap\Heapy.GeneralHeap.csproj" />
+    <ProjectReference Include="..\WindowsHeapIndirect\WindowsHeapIndirect.csproj" />
+    <ProjectReference Include="..\WindowsHeapPInvoke\Heapy.WindowsHeapPInvoke.csproj" />
+    <ProjectReference Include="..\WindowsHeap\Heapy.WindowsHeap.csproj" />
+  </ItemGroup>
+
+  <PropertyGroup>
+    <OutputType>Exe</OutputType>
+    <TargetFramework>net5.0</TargetFramework>
+  </PropertyGroup>
+
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|AnyCPU'">
+    <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
+  </PropertyGroup>
+
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|AnyCPU'">
+    <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
+  </PropertyGroup>
+
+</Project>
