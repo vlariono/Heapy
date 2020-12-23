@@ -42,7 +42,7 @@ namespace Heapy.Core.Collection
             init => _ptr = (TItem*)value;
         }
 
-        public TItem Last => _ptr[_count-1];
+        public TItem Last => _ptr[_count - 1];
 
         public UnmanagedState State => _disposed || Ptr == IntPtr.Zero || Heap.State != UnmanagedState.Available
                                 ? UnmanagedState.Unavailable
@@ -78,7 +78,7 @@ namespace Heapy.Core.Collection
             {
                 if (0 > index || index >= _count)
                 {
-                    throw new IndexOutOfRangeException();
+                    throw new IndexOutOfRangeException(index.ToString());
                 }
 
                 return ref _ptr[index];
@@ -93,6 +93,20 @@ namespace Heapy.Core.Collection
             }
             _ptr[_count] = item;
             _count++;
+        }
+
+        public void RemoveAt(int index)
+        {
+            if (0 > index || index >= _count)
+            {
+                throw new ArgumentOutOfRangeException(nameof(index));
+            }
+
+            var sourceSpan = new Span<TItem>(_ptr, _count).Slice(index + 1, _count - index - 1);
+            var destinationSpan = new Span<TItem>(_ptr, _count).Slice(index, _count - index);
+            sourceSpan.CopyTo(destinationSpan);
+            _ptr[_count--] = default;
+
         }
 
         public void Dispose()

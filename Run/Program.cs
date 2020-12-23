@@ -15,21 +15,14 @@ namespace Run
         public int I2 { get; set; }
     }
 
-    internal class CTest
-    {
-        public int I1 { get; set; }
-        public int I2 { get; set; }
-    }
-
-    internal class Program
+    internal unsafe class Program
     {
         private static void Main(string[] args)
         {
             Console.WriteLine("Hello World!");
             var watch = new System.Diagnostics.Stopwatch();
-
             HeapManager.Init(WindowsPrivateHeapIndirect.Create);
-            var localHeap = HeapManager.SetLocalHeap(new ProcessHeap());
+            //var localHeap = HeapManager.SetLocalHeap(new ProcessHeap());
 
             var array = new Test[2]
             {
@@ -55,16 +48,26 @@ namespace Run
                 I1 = 200,
                 I2 = 202
             });
-            var t1 = uarray[0];
-            var t2 = uarray[1];
-
-            Console.WriteLine($"Local heap is current: {localHeap.Equals(HeapManager.Current)}");
-            watch.Start();
-            for (int i = uarray.Count; i < uarray.Length; i++)
+            uarray.Add(new Test()
             {
-                uarray.Add(new Test());
+                I1 = 300,
+                I2 = 302
+            });
+            uarray.Add(new Test()
+            {
+                I1 = 400,
+                I2 = 402
+            });
 
+            Console.WriteLine($"Count before removal {uarray.Count}");
+            uarray.RemoveAt(3);
+            Console.WriteLine($"Count after removal {uarray.Count}");
+            watch.Start();
+            for (int i = 0; i < uarray.Count; i++)
+            {
+                Console.WriteLine($"I1: {uarray[i].I1} I2: {uarray[i].I2}");
             }
+
             watch.Stop();
             var ms = watch.ElapsedMilliseconds;
             Console.WriteLine($"Execution Time: {ms} ms");
@@ -76,7 +79,7 @@ namespace Run
             //Console.WriteLine($"{localHeap.State}");
             //Console.WriteLine("Dispose last object");
             //Console.ReadLine();
-            Console.WriteLine($"{localHeap.State}");
+            //Console.WriteLine($"{localHeap.State}");
             Console.ReadLine();
         }
     }
