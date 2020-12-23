@@ -12,34 +12,21 @@ namespace Heapy.Core.Collection
         private readonly int _length;
 
         private bool _disposed;
-        private int _lastIndex;
+        private int _count;
 
         public RefArray(int length) : this()
         {
             _length = length;
-            _lastIndex = -1;
+            _count = 0;
             _heap = HeapManager.Current;
 
             _ptr = (TItem*)(IntPtr)Heap.Alloc<TItem>((uint)(sizeof(TItem) * _length));
-        }
-
-        public RefArray(TItem[] items) : this()
-        {
-            _length = items.Length;
-            _lastIndex = items.Length-1;
-            _heap = HeapManager.Current;
-
-            _ptr = (TItem*)(IntPtr)Heap.Alloc<TItem>((uint)(sizeof(TItem) * _length));
-
-            var spanSource = new Span<TItem>(items);
-            var spanDestination = new Span<TItem>(_ptr, items.Length);
-            spanSource.CopyTo(spanDestination);
         }
 
         public RefArray(TItem[] items, int length) : this()
         {
             _length = items.Length + length;
-            _lastIndex = items.Length-1;
+            _count = items.Length;
             _heap = HeapManager.Current;
 
             _ptr = (TItem*)(IntPtr)Heap.Alloc<TItem>((uint)(sizeof(TItem) * _length));
@@ -55,8 +42,7 @@ namespace Heapy.Core.Collection
             init => _ptr = (TItem*)value;
         }
 
-        public TItem Last => _ptr[LastIndex];
-        public int LastIndex => _lastIndex;
+        public TItem Last => _ptr[_count-1];
 
         public UnmanagedState State => _disposed || Ptr == IntPtr.Zero || Heap.State != UnmanagedState.Available
                                 ? UnmanagedState.Unavailable
@@ -68,6 +54,18 @@ namespace Heapy.Core.Collection
             init => _heap = value;
         }
 
+        /// <summary>
+        /// Number of items in the array
+        /// </summary>
+        public int Count
+        {
+            get => _count;
+            init => _count = value;
+        }
+
+        /// <summary>
+        /// Length of the array
+        /// </summary>
         public int Length
         {
             get => _length;
@@ -78,7 +76,7 @@ namespace Heapy.Core.Collection
         {
             get
             {
-                if (0 > index || index > _lastIndex)
+                if (0 > index || index >= _count)
                 {
                     throw new IndexOutOfRangeException();
                 }
@@ -89,13 +87,12 @@ namespace Heapy.Core.Collection
 
         public void Add(TItem item)
         {
-            var position = _lastIndex + 1;
-            if (position >= _length)
+            if (_count >= _length)
             {
                 throw new ArgumentOutOfRangeException(nameof(item), "Array is full");
             }
-            _ptr[position] = item;
-            _lastIndex = position;
+            _ptr[_count] = item;
+            _count++;
         }
 
         public void Dispose()

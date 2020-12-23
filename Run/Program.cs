@@ -60,7 +60,7 @@ namespace Run
 
             Console.WriteLine($"Local heap is current: {localHeap.Equals(HeapManager.Current)}");
             watch.Start();
-            for (int i = uarray.LastIndex+1; i < uarray.Length; i++)
+            for (int i = uarray.Count; i < uarray.Length; i++)
             {
                 uarray.Add(new Test());
 
