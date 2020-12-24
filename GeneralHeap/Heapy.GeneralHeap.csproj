@@ -10,4 +10,8 @@
     <ProjectReference Include="..\Core\Heapy.Core.csproj" />
   </ItemGroup>
 
+  <ItemGroup>
+    <Folder Include="Heap\" />
+  </ItemGroup>
+
 </Project>

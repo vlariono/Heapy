@@ -3,7 +3,7 @@ using System.Runtime.InteropServices;
 using Heapy.Core.Enum;
 using Heapy.WindowsHeap.Interface;
 
-namespace Heapy.WindowsHeap.Heap
+namespace Heapy.WindowsHeap.UnmanagedHeap
 {
     internal sealed class WindowsHeapHandle : SafeHandle
     {

@@ -4,10 +4,10 @@ using AdvancedDLSupport;
 using Heapy.Core.Enum;
 using Heapy.Core.Exception;
 using Heapy.Core.Interface;
-using Heapy.WindowsHeap.Heap;
 using Heapy.WindowsHeap.Interface;
+using Heapy.WindowsHeap.UnmanagedHeap;
 
-namespace WindowsHeapIndirect.Heap
+namespace Heapy.WindowsHeapIndirect.UnmanagedHeap
 {
     public static class WindowsPrivateHeapIndirect
     {
@@ -33,7 +33,7 @@ namespace WindowsHeapIndirect.Heap
             return Create(4194304, 0,withCounter:true);
         }
 
-        public static IUnmanagedHeap Create(uint initialSize, uint maximumSize, uint options = (uint)WindowsHeapOptions.None, bool withCounter = false)
+        public static IUnmanagedHeap Create(uint initialSize, uint maximumSize, uint options = (uint)WindowsHeapOptions.ZeroMemory, bool withCounter = false)
         {
             var handle = Kernel32Lib.HeapCreate(
                 (uint) WindowsHeapOptions.ZeroMemory,

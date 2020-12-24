@@ -1,4 +1,4 @@
-﻿using Heapy.Core.Heap;
+﻿using Heapy.Core.UnmanagedHeap;
 
 namespace Heapy.Core.Extension
 {
@@ -6,7 +6,7 @@ namespace Heapy.Core.Extension
     {
         public static Unmanaged<TValue> ToUnmanaged<TValue>(this TValue value) where TValue : unmanaged
         {
-            return HeapManager.Current.Alloc(value);
+            return Heap.Current.Alloc(value);
         }
     }
 }

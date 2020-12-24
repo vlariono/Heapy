@@ -1,12 +1,11 @@
 ﻿using System;
-using System.Runtime.InteropServices;
 using Heapy.Core.Enum;
 using Heapy.Core.Exception;
-using Heapy.Core.Heap;
 using Heapy.Core.Interface;
+using Heapy.Core.UnmanagedHeap;
 using Heapy.WindowsHeap.Interface;
 
-namespace Heapy.WindowsHeap.Heap
+namespace Heapy.WindowsHeap.UnmanagedHeap
 {
     public sealed class WindowsPrivateHeap:IUnmanagedHeap
     {
@@ -40,7 +39,7 @@ namespace Heapy.WindowsHeap.Heap
             }
         }
 
-        public bool IsReadonly => _disposed && _heapHandle.State == UnmanagedState.Available;
+        public bool IsReadonly => _disposed;
         public UnmanagedState State => _heapHandle.State;
 
         public void Dispose()
@@ -63,7 +62,7 @@ namespace Heapy.WindowsHeap.Heap
         {
             ThrowIfUnavailable();
             var unmanagedObject = Alloc<TValue>((uint)sizeof(TValue),(uint) WindowsHeapOptions.None);
-            Marshal.StructureToPtr(value, unmanagedObject, true);
+            unmanagedObject.Value = value;
             return unmanagedObject;
         }
 
@@ -95,11 +94,7 @@ namespace Heapy.WindowsHeap.Heap
                     }
                 }
 
-                return new Unmanaged<TValue>
-                {
-                    Ptr = allocHandle,
-                    Heap = this
-                };
+                return new Unmanaged<TValue>(allocHandle, this);
             }
             catch
             {
@@ -131,12 +126,8 @@ namespace Heapy.WindowsHeap.Heap
             {
                 throw new UnmanagedObjectUnavailable("Failed to reallocate memory");
             }
-            
-            return new Unmanaged<TValue>
-            {
-                Ptr = allocHandle,
-                Heap = this
-            };
+
+            return new Unmanaged<TValue>(allocHandle, this);
         }
 
         public bool Free(IntPtr memory)

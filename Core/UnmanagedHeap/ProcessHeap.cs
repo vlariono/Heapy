@@ -1,11 +1,9 @@
 ﻿using System;
 using System.Runtime.InteropServices;
 using Heapy.Core.Enum;
-using Heapy.Core.Exception;
-using Heapy.Core.Heap;
 using Heapy.Core.Interface;
 
-namespace Heapy.GeneralHeap.Heap
+namespace Heapy.Core.UnmanagedHeap
 {
     /// <summary>
     /// Default process heap. Does not support disposal
@@ -50,7 +48,7 @@ namespace Heapy.GeneralHeap.Heap
         {
             ThrowIfUnavailable();
             var unmanagedObject = Alloc<TValue>((uint)sizeof(TValue));
-            Marshal.StructureToPtr(value, unmanagedObject, true);
+            unmanagedObject.Value = value;
             return unmanagedObject;
         }
 
@@ -64,11 +62,7 @@ namespace Heapy.GeneralHeap.Heap
         {
             ThrowIfUnavailable();
             var allocHandle = Marshal.AllocHGlobal((int)bytes);
-            return new Unmanaged<TValue>()
-            {
-                Ptr = allocHandle,
-                Heap = this
-            };
+            return new Unmanaged<TValue>(allocHandle, this);
         }
 
         public Unmanaged<TValue> Realloc<TValue>(IntPtr memory, uint bytes) where TValue : unmanaged
@@ -82,11 +76,7 @@ namespace Heapy.GeneralHeap.Heap
             ThrowIfUnavailable();
             var cb = new IntPtr(bytes);
             var allocHandle = Marshal.ReAllocHGlobal(memory, cb);
-            return new Unmanaged<TValue>
-            {
-                Ptr = allocHandle,
-                Heap = this
-            };
+            return new Unmanaged<TValue>(allocHandle, this);
         }
 
         public bool Free(IntPtr memory)

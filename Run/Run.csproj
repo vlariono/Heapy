@@ -2,8 +2,7 @@
 
   <ItemGroup>
     <ProjectReference Include="..\Core\Heapy.Core.csproj" />
-    <ProjectReference Include="..\GeneralHeap\Heapy.GeneralHeap.csproj" />
-    <ProjectReference Include="..\WindowsHeapIndirect\WindowsHeapIndirect.csproj" />
+    <ProjectReference Include="..\WindowsHeapIndirect\Heapy.WindowsHeapIndirect.csproj" />
     <ProjectReference Include="..\WindowsHeapPInvoke\Heapy.WindowsHeapPInvoke.csproj" />
     <ProjectReference Include="..\WindowsHeap\Heapy.WindowsHeap.csproj" />
   </ItemGroup>

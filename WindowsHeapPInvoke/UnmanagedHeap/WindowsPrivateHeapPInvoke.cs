@@ -2,10 +2,10 @@
 using Heapy.Core.Enum;
 using Heapy.Core.Exception;
 using Heapy.Core.Interface;
-using Heapy.WindowsHeap.Heap;
 using Heapy.WindowsHeap.Interface;
+using Heapy.WindowsHeap.UnmanagedHeap;
 
-namespace Heapy.WindowsHeapPInvoke.Heap
+namespace Heapy.WindowsHeapPInvoke.UnmanagedHeap
 {
     public sealed class WindowsPrivateHeapPInvoke:IWindowsPrivateHeapNative
     {
@@ -28,7 +28,7 @@ namespace Heapy.WindowsHeapPInvoke.Heap
             return Create(4194304, 0,withCounter:true);
         }
 
-        public static IUnmanagedHeap Create(uint initialSize, uint maximumSize, uint options = (uint)WindowsHeapOptions.None, bool withCounter = false)
+        public static IUnmanagedHeap Create(uint initialSize, uint maximumSize, uint options = (uint)WindowsHeapOptions.ZeroMemory, bool withCounter = false)
         {
             var heapHandle = Kernel32Lib.HeapCreate(options, (IntPtr)initialSize, (IntPtr)maximumSize);
             if (heapHandle == IntPtr.Zero)

@@ -1,7 +1,7 @@
 using System;
 using System.Runtime.InteropServices;
 
-namespace Heapy.WindowsHeapPInvoke.Heap
+namespace Heapy.WindowsHeapPInvoke.UnmanagedHeap
 {
     internal static class WindowsHeapNative
     {

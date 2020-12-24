@@ -1,7 +1,7 @@
 ﻿using System;
 using Heapy.Core.Enum;
-using Heapy.Core.Heap;
 using Heapy.Core.Interface;
+using Heapy.Core.UnmanagedHeap;
 
 namespace Heapy.Core.Collection
 {
@@ -14,63 +14,73 @@ namespace Heapy.Core.Collection
         private bool _disposed;
         private int _count;
 
+        public RefArray(IntPtr ptr, int length, int count, IUnmanagedHeap heap):this()
+        {
+            if (heap == null)
+            {
+                throw new ArgumentNullException(nameof(heap));
+            }
+
+            if (ptr == IntPtr.Zero)
+            {
+                throw new ArgumentNullException(nameof(ptr));
+            }
+
+            if (count > length)
+            {
+                throw new ArgumentOutOfRangeException(nameof(count),"Count cannot exceed length");
+            }
+
+            _ptr = (TItem*)ptr;
+            _count = count;
+            _length = length;
+            _heap = heap;
+        }
+
         public RefArray(int length) : this()
         {
             _length = length;
             _count = 0;
-            _heap = HeapManager.Current;
+            _heap = UnmanagedHeap.Heap.Current;
 
-            _ptr = (TItem*)(IntPtr)Heap.Alloc<TItem>((uint)(sizeof(TItem) * _length));
+            _ptr = Heap.Alloc<TItem>((uint)(sizeof(TItem) * _length));
         }
 
         public RefArray(TItem[] items, int length) : this()
         {
+            if (items == null)
+            {
+                throw new ArgumentNullException(nameof(items));
+            }
+
             _length = items.Length + length;
             _count = items.Length;
-            _heap = HeapManager.Current;
+            _heap = UnmanagedHeap.Heap.Current;
 
-            _ptr = (TItem*)(IntPtr)Heap.Alloc<TItem>((uint)(sizeof(TItem) * _length));
+            _ptr = Heap.Alloc<TItem>((uint)(sizeof(TItem) * _length));
 
             var spanSource = new Span<TItem>(items);
             var spanDestination = new Span<TItem>(_ptr, items.Length);
             spanSource.CopyTo(spanDestination);
         }
 
-        public IntPtr Ptr
-        {
-            private get => (IntPtr)_ptr;
-            init => _ptr = (TItem*)value;
-        }
-
         public TItem Last => _ptr[_count - 1];
 
-        public UnmanagedState State => _disposed || Ptr == IntPtr.Zero || Heap.State != UnmanagedState.Available
+        public UnmanagedState State => _disposed || (IntPtr)_ptr == IntPtr.Zero || Heap.State != UnmanagedState.Available
                                 ? UnmanagedState.Unavailable
                                 : UnmanagedState.Available;
 
-        public IUnmanagedHeap Heap
-        {
-            get => _heap;
-            init => _heap = value;
-        }
+        public IUnmanagedHeap Heap => _heap;
 
         /// <summary>
         /// Number of items in the array
         /// </summary>
-        public int Count
-        {
-            get => _count;
-            init => _count = value;
-        }
+        public int Count => _count;
 
         /// <summary>
         /// Length of the array
         /// </summary>
-        public int Length
-        {
-            get => _length;
-            init => _length = value;
-        }
+        public int Length => _length;
 
         public ref TItem this[int index]
         {
@@ -112,9 +122,12 @@ namespace Heapy.Core.Collection
         {
             if (State == UnmanagedState.Available)
             {
-                Heap.Free(Ptr);
+                Heap.Free(this);
             }
             _disposed = true;
         }
+
+        public static implicit operator IntPtr(RefArray<TItem> array) => (IntPtr)array._ptr;
+        public static implicit operator TItem*(RefArray<TItem> array) => array._ptr;
     }
 }

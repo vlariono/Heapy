@@ -1,6 +1,6 @@
 using System;
 using Heapy.Core.Enum;
-using Heapy.Core.Heap;
+using Heapy.Core.UnmanagedHeap;
 
 namespace Heapy.Core.Interface
 {
