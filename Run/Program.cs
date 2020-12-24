@@ -19,16 +19,16 @@ namespace Run
         private static void Main(string[] args)
         {
             Console.WriteLine("Hello World!");
-            Heap.SetPrivateHeapFactory(WindowsPrivateHeapPInvoke.Create);
+            Heap.SetPrivateHeapFactory(WindowsPrivateHeapIndirect.Create);
             var watch = new System.Diagnostics.Stopwatch();
 
-            using (Heap.GetPrivateHeap())
+            using (var heap = Heap.GetPrivateHeap())
             {
                 var uarray = new RefArray<Test>(100000000);
                 watch.Start();
                 for (int i = 0; i < 100000000; i++)
                 {
-                    Heap.Alloc<Test>();
+                    heap.Alloc<Test>();
                 }
 
                 watch.Stop();

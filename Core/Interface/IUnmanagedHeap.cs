@@ -6,7 +6,6 @@ namespace Heapy.Core.Interface
 {
     public interface IUnmanagedHeap : IDisposable
     {
-        bool IsReadonly { get; }
         UnmanagedState State { get; }
         Unmanaged<TValue> Alloc<TValue>() where TValue : unmanaged;
         Unmanaged<TValue> Alloc<TValue>(TValue value) where TValue : unmanaged;

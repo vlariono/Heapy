@@ -27,11 +27,6 @@ namespace Heapy.WindowsHeapIndirect.UnmanagedHeap
         {
             return Create(4194304, 0);
         }
-        
-        public static IUnmanagedHeap CreateWithCounter()
-        {
-            return Create(4194304, 0,withCounter:true);
-        }
 
         public static IUnmanagedHeap Create(uint initialSize, uint maximumSize, uint options = (uint)WindowsHeapOptions.ZeroMemory, bool withCounter = false)
         {
@@ -44,7 +39,7 @@ namespace Heapy.WindowsHeapIndirect.UnmanagedHeap
                 throw new UnmanagedHeapUnavailable("Failed to create heap");
             }
 
-            return new WindowsPrivateHeap(handle, Kernel32Lib,withCounter);
+            return new WindowsPrivateHeap(handle, Kernel32Lib);
         }
     }
 }

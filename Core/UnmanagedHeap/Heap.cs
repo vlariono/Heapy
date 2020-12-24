@@ -27,7 +27,7 @@ namespace Heapy.Core.UnmanagedHeap
         /// <summary>
         /// The heap is set either with <see cref="GetPrivateHeap"/> or with <see cref="SetPrivateHeap"/>
         /// </summary>
-        public static IUnmanagedHeap? Private => LocalHeap.Value?.State == UnmanagedState.Available && !LocalHeap.Value.IsReadonly ? LocalHeap.Value : null;
+        public static IUnmanagedHeap? Private => LocalHeap.Value?.State == UnmanagedState.Available ? LocalHeap.Value : null;
         /// <summary>
         /// The heap is <see cref="Private"/> if one is set or <see cref="Default"/>
         /// </summary>

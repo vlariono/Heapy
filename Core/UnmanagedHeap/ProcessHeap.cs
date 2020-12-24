@@ -34,8 +34,6 @@ namespace Heapy.Core.UnmanagedHeap
             return new ProcessHeap();
         }
 
-        public bool IsReadonly => _disposed;
-        
         public UnmanagedState State => UnmanagedState.Available;
         
         public unsafe Unmanaged<TValue> Alloc<TValue>() where TValue : unmanaged
