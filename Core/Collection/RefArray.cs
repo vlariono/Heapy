@@ -106,7 +106,6 @@ namespace Heapy.Core.Collection
             var destinationSpan = new Span<TItem>(_ptr, _count).Slice(index, _count - index);
             sourceSpan.CopyTo(destinationSpan);
             _ptr[_count--] = default;
-
         }
 
         public void Dispose()
