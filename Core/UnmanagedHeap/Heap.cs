@@ -68,10 +68,7 @@ namespace Heapy.Core.UnmanagedHeap
         /// </summary>
         /// <typeparam name="TValue">Type to map allocated memory to</typeparam>
         /// <returns>Pointer to unmanaged memory</returns>
-        public static Unmanaged<TValue> Alloc<TValue>() where TValue : unmanaged
-        {
-            return Current.Alloc<TValue>();
-        }
+        public static Unmanaged<TValue> Alloc<TValue>() where TValue : unmanaged => Current.Alloc<TValue>();
 
         /// <summary>
         /// Allocates unmanaged memory from <see cref="Current"/> heap and copies value from <see cref="value"/>
@@ -79,10 +76,7 @@ namespace Heapy.Core.UnmanagedHeap
         /// <typeparam name="TValue">Type to map allocated memory to</typeparam>
         /// <param name="value">Value to copy to allocated memory</param>
         /// <returns>Pointer to unmanaged memory</returns>
-        public static Unmanaged<TValue> Alloc<TValue>(TValue value) where TValue : unmanaged
-        {
-            return Current.Alloc<TValue>(value);
-        }
+        public static Unmanaged<TValue> Alloc<TValue>(TValue value) where TValue : unmanaged => Current.Alloc<TValue>(value);
 
         /// <summary>
         /// Allocates unmanaged memory of specified size <see cref="bytes"/>
@@ -90,10 +84,7 @@ namespace Heapy.Core.UnmanagedHeap
         /// <typeparam name="TValue">Type to map allocated memory to</typeparam>
         /// <param name="bytes">Amount of memory to allocate</param>
         /// <returns>Pointer to unmanaged memory</returns>
-        public static Unmanaged<TValue> Alloc<TValue>(uint bytes) where TValue : unmanaged
-        {
-            return Current.Alloc<TValue>(bytes);
-        }
+        public static Unmanaged<TValue> Alloc<TValue>(uint bytes) where TValue : unmanaged => Current.Alloc<TValue>(bytes);
 
         /// <summary>
         /// Allocates unmanaged memory of specified size <see cref="bytes"/> with options 
@@ -102,10 +93,7 @@ namespace Heapy.Core.UnmanagedHeap
         /// <param name="bytes">Amount of memory to allocate</param>
         /// <param name="options">Platform specific allocation options</param>
         /// <returns>Pointer to unmanaged memory</returns>
-        public static Unmanaged<TValue> Alloc<TValue>(uint bytes, uint options) where TValue : unmanaged
-        {
-            return Current.Alloc<TValue>(bytes, options);
-        }
+        public static Unmanaged<TValue> Alloc<TValue>(uint bytes, uint options) where TValue : unmanaged => Current.Alloc<TValue>(bytes, options);
 
         /// <summary>
         /// Reallocates memory to new size
@@ -114,10 +102,7 @@ namespace Heapy.Core.UnmanagedHeap
         /// <param name="memory">Pointer to allocated memory</param>
         /// <param name="bytes">New amount of memory to allocate</param>
         /// <returns>Pointer to unmanaged memory</returns>
-        public static Unmanaged<TValue> Realloc<TValue>(IntPtr memory, uint bytes) where TValue : unmanaged
-        {
-            return Current.Realloc<TValue>(memory, bytes);
-        }
+        public static Unmanaged<TValue> Realloc<TValue>(IntPtr memory, uint bytes) where TValue : unmanaged => Current.Realloc<TValue>(memory, bytes);
 
         /// <summary>
         /// Reallocates memory to new size with options
@@ -127,19 +112,13 @@ namespace Heapy.Core.UnmanagedHeap
         /// <param name="bytes">New amount of memory to allocate</param>
         /// <param name="options">Platform specific allocation options</param>
         /// <returns>Pointer to unmanaged memory</returns>
-        public static Unmanaged<TValue> Realloc<TValue>(IntPtr memory, uint bytes, uint options) where TValue : unmanaged
-        {
-            return Current.Realloc<TValue>(memory, bytes, options);
-        }
+        public static Unmanaged<TValue> Realloc<TValue>(IntPtr memory, uint bytes, uint options) where TValue : unmanaged => Current.Realloc<TValue>(memory, bytes, options);
 
         /// <summary>
         /// Deallocate memory
         /// </summary>
         /// <param name="memory">Memory to deallocate</param>
         /// <returns>true - succeeded and false - in case of error</returns>
-        public static bool Free(IntPtr memory)
-        {
-            return Current.Free(memory);
-        }
+        public static bool Free(IntPtr memory) => Current.Free(memory);
     }
 }

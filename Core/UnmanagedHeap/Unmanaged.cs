@@ -12,9 +12,8 @@ namespace Heapy.Core.UnmanagedHeap
     /// <typeparam name="TValue"></typeparam>
     public unsafe ref struct Unmanaged<TValue> where TValue : unmanaged
     {
-        private readonly TValue* _value;
         private readonly IUnmanagedHeap _heap;
-        private bool _disposed;
+        private TValue* _value;
 
         public Unmanaged(IntPtr ptr, IUnmanagedHeap heap) : this()
         {
@@ -46,7 +45,7 @@ namespace Heapy.Core.UnmanagedHeap
 
         public IUnmanagedHeap Heap => _heap;
 
-        public UnmanagedState State => _disposed || (IntPtr)_value == IntPtr.Zero || Heap.State != UnmanagedState.Available
+        public UnmanagedState State => (IntPtr)_value == IntPtr.Zero || Heap.State != UnmanagedState.Available
                                 ? UnmanagedState.Unavailable
                                 : UnmanagedState.Available;
 
@@ -68,9 +67,8 @@ namespace Heapy.Core.UnmanagedHeap
             if (State == UnmanagedState.Available)
             {
                 Heap.Free(this);
+                _value = (TValue*) IntPtr.Zero;
             }
-
-            _disposed = true;
         }
 
         public static implicit operator IntPtr(Unmanaged<TValue> unmanagedValue) => (IntPtr)unmanagedValue._value;

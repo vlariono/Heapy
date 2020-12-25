@@ -1,19 +1,17 @@
 ﻿using System;
 using Heapy.Core.Enum;
-using Heapy.Core.Exception;
 using Heapy.Core.Interface;
-using Heapy.Core.UnmanagedHeap;
 
 namespace Heapy.Core.Collection
 {
     public unsafe ref struct RefArray<TItem> where TItem : unmanaged
     {
         private readonly IUnmanagedHeap _heap;
-        private readonly int _length;
-        
+        private readonly Span<TItem> _span;
+            
         private TItem* _ptr;
 
-        public RefArray(IntPtr ptr, int length, int count, IUnmanagedHeap heap):this()
+        public RefArray(IntPtr ptr, int length, IUnmanagedHeap heap):this()
         {
             if (heap == null)
             {
@@ -25,39 +23,24 @@ namespace Heapy.Core.Collection
                 throw new ArgumentNullException(nameof(ptr));
             }
 
-            if (count > length)
-            {
-                throw new ArgumentOutOfRangeException(nameof(count),"Count cannot exceed length");
-            }
-
             _ptr = (TItem*)ptr;
-            _length = length;
             _heap = heap;
+            _span = new Span<TItem>(_ptr, length);
         }
 
         public RefArray(int length) : this()
         {
-            _length = length;
             _heap = UnmanagedHeap.Heap.Current;
-
-            _ptr = Heap.Alloc<TItem>((uint)(sizeof(TItem) * _length));
+            _ptr = _heap.Alloc<TItem>((uint)(sizeof(TItem) * length));
+            _span = new Span<TItem>(_ptr, length);
         }
 
-        public RefArray(TItem[] items, int length) : this()
+        public RefArray(ReadOnlySpan<TItem> items)
         {
-            if (items == null)
-            {
-                throw new ArgumentNullException(nameof(items));
-            }
-
-            _length = items.Length + length;
             _heap = UnmanagedHeap.Heap.Current;
-
-            _ptr = Heap.Alloc<TItem>((uint)(sizeof(TItem) * _length));
-
-            var spanSource = new Span<TItem>(items);
-            var spanDestination = new Span<TItem>(_ptr, items.Length);
-            spanSource.CopyTo(spanDestination);
+            _ptr = _heap.Alloc<TItem>((uint)(sizeof(TItem) * items.Length));
+            _span = new Span<TItem>(_ptr, items.Length);
+            items.CopyTo(_span);
         }
 
         public UnmanagedState State => (IntPtr)_ptr == IntPtr.Zero || Heap.State != UnmanagedState.Available
@@ -69,52 +52,26 @@ namespace Heapy.Core.Collection
         /// <summary>
         /// Length of the array
         /// </summary>
-        public int Length => _length;
+        public int Length => _span.Length;
 
-        public TItem this[int index]
-        {
-            get
-            {
-                ThrowIfUnavailable();
-                if (0 > index || index >= _length)
-                {
-                    throw new IndexOutOfRangeException(index.ToString());
-                }
-
-                return _ptr[index];
-            }
-        }
+        public ref TItem this[int index] => ref _span[index];
 
         public void RemoveAt(int index)
         {
-            ThrowIfUnavailable();
-            if (0 > index || index >= _length)
-            {
-                throw new ArgumentOutOfRangeException(nameof(index));
-            }
-
-            var last = _length - 1;
-            var sourceSpan = new Span<TItem>(_ptr, _length).Slice(index + 1, last - index );
-            var destinationSpan = new Span<TItem>(_ptr, _length).Slice(index, _length - index);
+            var last = _span.Length - 1;
+            var sourceSpan = _span.Slice(index + 1, last - index );
+            var destinationSpan = _span.Slice(index, _span.Length - index);
             sourceSpan.CopyTo(destinationSpan);
-            _ptr[last] = default;
+            _span[last] = default;
         }
 
-        public Span<TItem> AsSpan()
-        {
-            ThrowIfUnavailable();
-            return new(_ptr, _length);
-        }
+        public Span<TItem> AsSpan() => _span;
 
         /// <summary>
         /// Creates managed array
         /// </summary>
         /// <returns></returns>
-        public TItem[] ToArray()
-        {
-            ThrowIfUnavailable();
-            return AsSpan().ToArray();
-        }
+        public TItem[] ToArray() => _span.ToArray();
 
         public void Dispose()
         {
@@ -124,16 +81,19 @@ namespace Heapy.Core.Collection
                 _ptr = (TItem*)IntPtr.Zero;
             }
         }
-        
-        private void ThrowIfUnavailable()
+
+        public override bool Equals(object? obj)
         {
-            if (State != UnmanagedState.Available)
-            {
-                throw new UnmanagedObjectUnavailable($"{nameof(RefArray<TItem>)} is unavailable");
-            }
+            throw new NotSupportedException("Equals(object? obj)");
+        }
+
+        public override int GetHashCode()
+        {
+            throw new NotSupportedException("GetHashCode()");
         }
 
         public static implicit operator IntPtr(RefArray<TItem> array) => (IntPtr)array._ptr;
         public static implicit operator TItem*(RefArray<TItem> array) => array._ptr;
+        public static implicit operator Span<TItem>(RefArray<TItem> array) => array._span;
     }
 }
