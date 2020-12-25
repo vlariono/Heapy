@@ -1,5 +1,6 @@
 ﻿using System;
 using Heapy.Core.Enum;
+using Heapy.Core.Exception;
 using Heapy.Core.Interface;
 using Heapy.Core.UnmanagedHeap;
 
@@ -7,12 +8,10 @@ namespace Heapy.Core.Collection
 {
     public unsafe ref struct RefArray<TItem> where TItem : unmanaged
     {
-        private readonly TItem* _ptr;
         private readonly IUnmanagedHeap _heap;
         private readonly int _length;
-
-        private bool _disposed;
-        private int _count;
+        
+        private TItem* _ptr;
 
         public RefArray(IntPtr ptr, int length, int count, IUnmanagedHeap heap):this()
         {
@@ -32,7 +31,6 @@ namespace Heapy.Core.Collection
             }
 
             _ptr = (TItem*)ptr;
-            _count = count;
             _length = length;
             _heap = heap;
         }
@@ -40,7 +38,6 @@ namespace Heapy.Core.Collection
         public RefArray(int length) : this()
         {
             _length = length;
-            _count = 0;
             _heap = UnmanagedHeap.Heap.Current;
 
             _ptr = Heap.Alloc<TItem>((uint)(sizeof(TItem) * _length));
@@ -54,7 +51,6 @@ namespace Heapy.Core.Collection
             }
 
             _length = items.Length + length;
-            _count = items.Length;
             _heap = UnmanagedHeap.Heap.Current;
 
             _ptr = Heap.Alloc<TItem>((uint)(sizeof(TItem) * _length));
@@ -64,58 +60,60 @@ namespace Heapy.Core.Collection
             spanSource.CopyTo(spanDestination);
         }
 
-        public TItem Last => _ptr[_count - 1];
-
-        public UnmanagedState State => _disposed || (IntPtr)_ptr == IntPtr.Zero || Heap.State != UnmanagedState.Available
+        public UnmanagedState State => (IntPtr)_ptr == IntPtr.Zero || Heap.State != UnmanagedState.Available
                                 ? UnmanagedState.Unavailable
                                 : UnmanagedState.Available;
 
         public IUnmanagedHeap Heap => _heap;
 
         /// <summary>
-        /// Number of items in the array
-        /// </summary>
-        public int Count => _count;
-
-        /// <summary>
         /// Length of the array
         /// </summary>
         public int Length => _length;
 
-        public ref TItem this[int index]
+        public TItem this[int index]
         {
             get
             {
-                if (0 > index || index >= _count)
+                ThrowIfUnavailable();
+                if (0 > index || index >= _length)
                 {
                     throw new IndexOutOfRangeException(index.ToString());
                 }
 
-                return ref _ptr[index];
+                return _ptr[index];
             }
-        }
-
-        public void Add(TItem item)
-        {
-            if (_count >= _length)
-            {
-                throw new ArgumentOutOfRangeException(nameof(item), "Array is full");
-            }
-            _ptr[_count] = item;
-            _count++;
         }
 
         public void RemoveAt(int index)
         {
-            if (0 > index || index >= _count)
+            ThrowIfUnavailable();
+            if (0 > index || index >= _length)
             {
                 throw new ArgumentOutOfRangeException(nameof(index));
             }
 
-            var sourceSpan = new Span<TItem>(_ptr, _count).Slice(index + 1, _count - index - 1);
-            var destinationSpan = new Span<TItem>(_ptr, _count).Slice(index, _count - index);
+            var last = _length - 1;
+            var sourceSpan = new Span<TItem>(_ptr, _length).Slice(index + 1, last - index );
+            var destinationSpan = new Span<TItem>(_ptr, _length).Slice(index, _length - index);
             sourceSpan.CopyTo(destinationSpan);
-            _ptr[_count--] = default;
+            _ptr[last] = default;
+        }
+
+        public Span<TItem> AsSpan()
+        {
+            ThrowIfUnavailable();
+            return new(_ptr, _length);
+        }
+
+        /// <summary>
+        /// Creates managed array
+        /// </summary>
+        /// <returns></returns>
+        public TItem[] ToArray()
+        {
+            ThrowIfUnavailable();
+            return AsSpan().ToArray();
         }
 
         public void Dispose()
@@ -123,8 +121,16 @@ namespace Heapy.Core.Collection
             if (State == UnmanagedState.Available)
             {
                 Heap.Free(this);
+                _ptr = (TItem*)IntPtr.Zero;
             }
-            _disposed = true;
+        }
+        
+        private void ThrowIfUnavailable()
+        {
+            if (State != UnmanagedState.Available)
+            {
+                throw new UnmanagedObjectUnavailable($"{nameof(RefArray<TItem>)} is unavailable");
+            }
         }
 
         public static implicit operator IntPtr(RefArray<TItem> array) => (IntPtr)array._ptr;
