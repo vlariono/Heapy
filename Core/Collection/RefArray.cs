@@ -1,15 +1,16 @@
 ﻿using System;
 using Heapy.Core.Enum;
 using Heapy.Core.Interface;
+using Heapy.Core.UnmanagedHeap;
 
 namespace Heapy.Core.Collection
 {
-    public unsafe ref struct RefArray<TItem> where TItem : unmanaged
+    public ref struct RefArray<TItem> where TItem : unmanaged
     {
         private readonly Span<TItem> _span;
-        private TItem* _ptr;
+        private Unmanaged<TItem> _array;
 
-        public RefArray(IntPtr ptr, int length, IUnmanagedHeap heap) : this()
+        public unsafe RefArray(IntPtr ptr, int length, IUnmanagedHeap heap) : this()
         {
             if (heap == null)
             {
@@ -21,40 +22,30 @@ namespace Heapy.Core.Collection
                 throw new ArgumentNullException(nameof(ptr));
             }
 
-            _ptr = (TItem*) ptr;
-            Heap = heap;
-            _span = new Span<TItem>(_ptr, length);
+            _array = new Unmanaged<TItem>(ptr, heap);
+            _span = new Span<TItem>(_array, length);
+
         }
 
-        public RefArray(int length) : this()
+        public unsafe RefArray(int length) : this()
         {
-            Heap = UnmanagedHeap.Heap.Current;
-            _ptr = Heap.Alloc<TItem>((uint) (sizeof(TItem) * length));
-            _span = new Span<TItem>(_ptr, length);
+            _array = Heap.Alloc<TItem>((uint) (sizeof(TItem) * length));
+            _span = new Span<TItem>(_array, length);
         }
 
-        public RefArray(ReadOnlySpan<TItem> items)
+        public unsafe RefArray(ReadOnlySpan<TItem> items)
         {
-            Heap = UnmanagedHeap.Heap.Current;
-            _ptr = Heap.Alloc<TItem>((uint) (sizeof(TItem) * items.Length));
-            _span = new Span<TItem>(_ptr, items.Length);
+            _array = Heap.Alloc<TItem>((uint) (sizeof(TItem) * items.Length));
+            _span = new Span<TItem>(_array, items.Length);
             items.CopyTo(_span);
         }
 
         public void Dispose()
         {
-            if (State == UnmanagedState.Available)
-            {
-                Heap.Free(this);
-                _ptr = (TItem*) IntPtr.Zero;
-            }
+            _array.Dispose();
         }
 
-        public UnmanagedState State => (IntPtr) _ptr == IntPtr.Zero || Heap.State != UnmanagedState.Available
-            ? UnmanagedState.Unavailable
-            : UnmanagedState.Available;
-
-        public IUnmanagedHeap Heap { get; }
+        public UnmanagedState State => _array.State;
 
         /// <summary>
         ///     Length of the array
@@ -78,7 +69,7 @@ namespace Heapy.Core.Collection
         }
 
         /// <summary>
-        ///     Creates managed array
+        ///     Create managed array
         /// </summary>
         /// <returns></returns>
         public TItem[] ToArray()
@@ -98,8 +89,8 @@ namespace Heapy.Core.Collection
             throw new NotSupportedException("GetHashCode()");
         }
 
-        public static implicit operator IntPtr(RefArray<TItem> array) => (IntPtr)array._ptr;
-        public static implicit operator TItem*(RefArray<TItem> array) => array._ptr;
+        public static implicit operator IntPtr(RefArray<TItem> array) => array._array;
+        public static unsafe implicit operator TItem*(RefArray<TItem> array) => array._array;
         public static implicit operator Span<TItem>(RefArray<TItem> array) => array._span;
     }
 }
