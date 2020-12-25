@@ -37,12 +37,6 @@ namespace Heapy.Core.UnmanagedHeap
             _value = Heap.Alloc(value);
         }
 
-        public Unmanaged(uint bytes) : this()
-        {
-            _heap = UnmanagedHeap.Heap.Current;
-            _value = Heap.Alloc<TValue>(bytes);
-        }
-
         public IUnmanagedHeap Heap => _heap;
 
         public UnmanagedState State => (IntPtr)_value == IntPtr.Zero || Heap.State != UnmanagedState.Available
