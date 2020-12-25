@@ -34,7 +34,7 @@ namespace Heapy.Core.UnmanagedHeap
         public static IUnmanagedHeap Current => Private ?? Default ?? throw new UnmanagedHeapUnavailable("Run init before using heap");
 
         /// <summary>
-        /// Gets new instance of private heap
+        /// Get new instance of private heap
         /// </summary>
         /// <returns>Instance of heap from heap factory</returns>
         public static IUnmanagedHeap GetPrivateHeap()
@@ -44,7 +44,7 @@ namespace Heapy.Core.UnmanagedHeap
         }
 
         /// <summary>
-        /// Sets heap factory to produce private heaps with <see cref="GetPrivateHeap"/>
+        /// Set heap factory to produce private heaps with <see cref="GetPrivateHeap"/>
         /// </summary>
         /// <param name="heapFactory">Factory method</param>
         public static void SetPrivateHeapFactory(Func<IUnmanagedHeap> heapFactory)
@@ -53,7 +53,7 @@ namespace Heapy.Core.UnmanagedHeap
         }
 
         /// <summary>
-        /// Sets instance of local heap to specified instance
+        /// Set instance of private heap to specified instance
         /// </summary>
         /// <param name="heap">Instance of heap</param>
         /// <returns>Instance of heap</returns>
@@ -64,14 +64,14 @@ namespace Heapy.Core.UnmanagedHeap
         }
 
         /// <summary>
-        /// Allocates unmanaged memory from <see cref="Current"/> heap.
+        /// Allocate unmanaged memory from <see cref="Current"/> heap.
         /// </summary>
         /// <typeparam name="TValue">Type to map allocated memory to</typeparam>
         /// <returns>Pointer to unmanaged memory</returns>
         public static Unmanaged<TValue> Alloc<TValue>() where TValue : unmanaged => Current.Alloc<TValue>();
 
         /// <summary>
-        /// Allocates unmanaged memory from <see cref="Current"/> heap and copies value from <see cref="value"/>
+        /// Allocate unmanaged memory from <see cref="Current"/> heap and copies value from <see cref="value"/>
         /// </summary>
         /// <typeparam name="TValue">Type to map allocated memory to</typeparam>
         /// <param name="value">Value to copy to allocated memory</param>
@@ -79,7 +79,7 @@ namespace Heapy.Core.UnmanagedHeap
         public static Unmanaged<TValue> Alloc<TValue>(TValue value) where TValue : unmanaged => Current.Alloc<TValue>(value);
 
         /// <summary>
-        /// Allocates unmanaged memory of specified size <see cref="bytes"/>
+        /// Allocate unmanaged memory of specified size <see cref="bytes"/>
         /// </summary>
         /// <typeparam name="TValue">Type to map allocated memory to</typeparam>
         /// <param name="bytes">Amount of memory to allocate</param>
@@ -87,7 +87,7 @@ namespace Heapy.Core.UnmanagedHeap
         public static Unmanaged<TValue> Alloc<TValue>(uint bytes) where TValue : unmanaged => Current.Alloc<TValue>(bytes);
 
         /// <summary>
-        /// Allocates unmanaged memory of specified size <see cref="bytes"/> with options 
+        /// Allocate unmanaged memory of specified size <see cref="bytes"/> with options 
         /// </summary>
         /// <typeparam name="TValue">Type to map allocated memory to</typeparam>
         /// <param name="bytes">Amount of memory to allocate</param>
@@ -96,7 +96,7 @@ namespace Heapy.Core.UnmanagedHeap
         public static Unmanaged<TValue> Alloc<TValue>(uint bytes, uint options) where TValue : unmanaged => Current.Alloc<TValue>(bytes, options);
 
         /// <summary>
-        /// Reallocates memory to new size
+        /// ReAllocate memory to new size
         /// </summary>
         /// <typeparam name="TValue">Type to map allocated memory to</typeparam>
         /// <param name="memory">Pointer to allocated memory</param>
@@ -105,7 +105,7 @@ namespace Heapy.Core.UnmanagedHeap
         public static Unmanaged<TValue> Realloc<TValue>(IntPtr memory, uint bytes) where TValue : unmanaged => Current.Realloc<TValue>(memory, bytes);
 
         /// <summary>
-        /// Reallocates memory to new size with options
+        /// ReAllocate memory to new size with options
         /// </summary>
         /// <typeparam name="TValue">Type to map allocated memory to</typeparam>
         /// <param name="memory">Pointer to allocated memory</param>
