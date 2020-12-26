@@ -8,7 +8,7 @@ namespace Heapy.Core.Enum
         /// <summary>
         /// Default options
         /// </summary>
-        None = 0,
+        Default = ZeroMemory,
         /// <summary>
         /// Serialized access is not used when the heap functions access this heap. This option applies to all subsequent heap function calls. 
         /// </summary>

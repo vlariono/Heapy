@@ -28,10 +28,10 @@ namespace Heapy.WindowsHeapIndirect.UnmanagedHeap
             return Create(4194304, 0);
         }
 
-        public static IUnmanagedHeap Create(uint initialSize, uint maximumSize, uint options = (uint)WindowsHeapOptions.ZeroMemory, bool withCounter = false)
+        public static IUnmanagedHeap Create(uint initialSize, uint maximumSize, uint options = (uint)WindowsHeapOptions.Default)
         {
             var handle = Kernel32Lib.HeapCreate(
-                (uint) WindowsHeapOptions.ZeroMemory,
+                options,
                 (IntPtr) initialSize,
                 (IntPtr) maximumSize);
             if (handle == IntPtr.Zero)

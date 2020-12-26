@@ -6,7 +6,7 @@ using Heapy.Core.Interface;
 namespace Heapy.Core.UnmanagedHeap
 {
     /// <summary>
-    /// Default process heap. Does not support disposal
+    /// Represents instance of default process heap. This heap is not private and do not support real disposal
     /// </summary>
     public sealed class ProcessHeap : IUnmanagedHeap
     {
@@ -29,54 +29,65 @@ namespace Heapy.Core.UnmanagedHeap
             }
         }
 
+        /// <summary>
+        /// Creates new instance of PrivateHeap
+        /// </summary>
+        /// <returns><see cref="IUnmanagedHeap"/></returns>
         public static IUnmanagedHeap Create()
         {
             return new ProcessHeap();
         }
 
+        /// <inheritdoc />
         public UnmanagedState State => UnmanagedState.Available;
         
-        public unsafe Unmanaged<TValue> Alloc<TValue>() where TValue : unmanaged
+        /// <inheritdoc />
+        public Unmanaged<TValue> Alloc<TValue>() where TValue : unmanaged
         {
             ThrowIfUnavailable();
-            return Alloc<TValue>((uint)sizeof(TValue));
+            return Alloc<TValue>(1);
         }
 
-        public unsafe Unmanaged<TValue> Alloc<TValue>(TValue value) where TValue : unmanaged
+        /// <inheritdoc />
+        public Unmanaged<TValue> Alloc<TValue>(TValue value) where TValue : unmanaged
         {
             ThrowIfUnavailable();
-            var unmanagedObject = Alloc<TValue>((uint)sizeof(TValue));
-            unmanagedObject.Value = value;
-            return unmanagedObject;
+            var unmanagedValue = Alloc<TValue>(1);
+            unmanagedValue.Value = value;
+            return unmanagedValue;
         }
 
-        public Unmanaged<TValue> Alloc<TValue>(uint bytes) where TValue : unmanaged
+        /// <inheritdoc />
+        public unsafe Unmanaged<TValue> Alloc<TValue>(int length) where TValue : unmanaged
         {
             ThrowIfUnavailable();
-            return Alloc<TValue>(bytes, 0);
+            var cb = new IntPtr(sizeof(TValue) * length);
+            var allocHandle = Marshal.AllocHGlobal(cb);
+            return new Unmanaged<TValue>(allocHandle, length, this);
         }
 
-        public Unmanaged<TValue> Alloc<TValue>(uint bytes, uint options) where TValue : unmanaged
+        /// <inheritdoc />
+        public Unmanaged<TValue> Alloc<TValue>(int length, uint options) where TValue : unmanaged
         {
-            ThrowIfUnavailable();
-            var allocHandle = Marshal.AllocHGlobal((int)bytes);
-            return new Unmanaged<TValue>(allocHandle, this);
+            return Alloc<TValue>(length);
         }
 
-        public Unmanaged<TValue> Realloc<TValue>(IntPtr memory, uint bytes) where TValue : unmanaged
+        /// <inheritdoc />
+        public unsafe Unmanaged<TValue> Realloc<TValue>(IntPtr memory, int length) where TValue : unmanaged
         {
             ThrowIfUnavailable();
-            return Realloc<TValue>(memory, bytes, 0);
-        }
-
-        public Unmanaged<TValue> Realloc<TValue>(IntPtr memory, uint bytes, uint options) where TValue : unmanaged
-        {
-            ThrowIfUnavailable();
-            var cb = new IntPtr(bytes);
+            var cb = new IntPtr(sizeof(TValue) * length);
             var allocHandle = Marshal.ReAllocHGlobal(memory, cb);
-            return new Unmanaged<TValue>(allocHandle, this);
+            return new Unmanaged<TValue>(allocHandle,length, this);
         }
 
+        /// <inheritdoc />
+        public Unmanaged<TValue> Realloc<TValue>(IntPtr memory, int length, uint options) where TValue : unmanaged
+        {
+            return Realloc<TValue>(memory, length);
+        }
+
+        /// <inheritdoc />
         public bool Free(IntPtr memory)
         {
             Marshal.FreeHGlobal(memory);

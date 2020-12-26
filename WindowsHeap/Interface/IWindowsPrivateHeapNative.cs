@@ -6,8 +6,8 @@ namespace Heapy.WindowsHeap.Interface
     {
         IntPtr HeapCreate(uint flOptions, IntPtr dwInitialSize, IntPtr dwMaximumSize);
         bool HeapDestroy(IntPtr hHeap);
-        IntPtr HeapAlloc(IntPtr hHeap, uint dwFlags, uint dwBytes);
-        IntPtr HeapReAlloc(IntPtr hHeap, uint dwFlags, IntPtr ptr, uint dwBytes);
+        IntPtr HeapAlloc(IntPtr hHeap, uint dwFlags, IntPtr dwBytes);
+        IntPtr HeapReAlloc(IntPtr hHeap, uint dwFlags, IntPtr ptr, IntPtr dwBytes);
         bool HeapFree(IntPtr hHeap, uint dwFlags, IntPtr lpMem);
     }
 }

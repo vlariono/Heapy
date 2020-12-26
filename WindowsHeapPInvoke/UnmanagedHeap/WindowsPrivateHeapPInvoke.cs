@@ -23,7 +23,7 @@ namespace Heapy.WindowsHeapPInvoke.UnmanagedHeap
             return Create(4194304, 0);
         }
 
-        public static IUnmanagedHeap Create(uint initialSize, uint maximumSize, uint options = (uint)WindowsHeapOptions.ZeroMemory, bool withCounter = false)
+        public static IUnmanagedHeap Create(uint initialSize, uint maximumSize, uint options = (uint)WindowsHeapOptions.Default)
         {
             var heapHandle = Kernel32Lib.HeapCreate(options, (IntPtr)initialSize, (IntPtr)maximumSize);
             if (heapHandle == IntPtr.Zero)
@@ -44,12 +44,12 @@ namespace Heapy.WindowsHeapPInvoke.UnmanagedHeap
             return WindowsHeapNative.HeapDestroy(hHeap);
         }
 
-        public IntPtr HeapAlloc(IntPtr hHeap, uint dwFlags, uint dwBytes)
+        public IntPtr HeapAlloc(IntPtr hHeap, uint dwFlags, IntPtr dwBytes)
         {
             return WindowsHeapNative.HeapAlloc(hHeap, dwFlags, dwBytes);
         }
 
-        public IntPtr HeapReAlloc(IntPtr hHeap, uint dwFlags, IntPtr ptr, uint dwBytes)
+        public IntPtr HeapReAlloc(IntPtr hHeap, uint dwFlags, IntPtr ptr, IntPtr dwBytes)
         {
             return WindowsHeapNative.HeapReAlloc(hHeap, dwFlags, ptr, dwBytes);
         }

@@ -12,10 +12,10 @@ namespace Heapy.WindowsHeapPInvoke.UnmanagedHeap
         public static extern bool HeapDestroy(IntPtr hHeap);
         
         [DllImport("kernel32.dll", SetLastError = false)]
-        public static extern IntPtr HeapAlloc(IntPtr hHeap, uint dwFlags, uint dwBytes);
+        public static extern IntPtr HeapAlloc(IntPtr hHeap, uint dwFlags, IntPtr dwBytes);
 
         [DllImport("kernel32.dll", SetLastError = false)]
-        public static extern IntPtr HeapReAlloc(IntPtr hHeap, uint dwFlags, IntPtr ptr, uint dwBytes);
+        public static extern IntPtr HeapReAlloc(IntPtr hHeap, uint dwFlags, IntPtr ptr, IntPtr dwBytes);
 
         [DllImport("kernel32.dll", SetLastError = true)]
         public static extern bool HeapFree(IntPtr hHeap, uint dwFlags, IntPtr lpMem);

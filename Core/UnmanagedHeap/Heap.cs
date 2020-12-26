@@ -20,23 +20,26 @@ namespace Heapy.Core.UnmanagedHeap
         }
 
         /// <summary>
-        /// Default heap will be used if no private heap is set
+        /// Returns instance of default heap <see cref="ProcessHeap"/>
         /// </summary>
         public static IUnmanagedHeap Default => DefaultHeap;
         
         /// <summary>
-        /// The heap is set either with <see cref="GetPrivateHeap"/> or with <see cref="SetPrivateHeap"/>
+        /// Returns current instance of private heap
         /// </summary>
         public static IUnmanagedHeap? Private => LocalHeap.Value?.State == UnmanagedState.Available ? LocalHeap.Value : null;
         /// <summary>
-        /// The heap is <see cref="Private"/> if one is set or <see cref="Default"/>
+        /// Returns instance of current heap.
+        /// Current heap is either <see cref="Private"/> or <see cref="Default"/>
         /// </summary>
         public static IUnmanagedHeap Current => Private ?? Default ?? throw new UnmanagedHeapUnavailable("Run init before using heap");
 
         /// <summary>
-        /// Get new instance of private heap
+        /// Returns new instance of private heap.
+        /// <see cref="Private"/> will return this instance for all subsequent calls till until it's disposed
+        /// <see cref="Current"/> will return this instance for all subsequent calls till until it's disposed
         /// </summary>
-        /// <returns>Instance of heap from heap factory</returns>
+        /// <returns><see cref="IUnmanagedHeap"/></returns>
         public static IUnmanagedHeap GetPrivateHeap()
         {
             LocalHeap.Value = HeapFactory.Value?.Invoke() ?? throw new UnmanagedHeapUnavailable("Failed to create heap or heap factory is not set");
@@ -44,19 +47,22 @@ namespace Heapy.Core.UnmanagedHeap
         }
 
         /// <summary>
-        /// Set heap factory to produce private heaps with <see cref="GetPrivateHeap"/>
+        /// Sets private heap factory to produce <see cref="IUnmanagedHeap"/> instance
+        /// <see cref="GetPrivateHeap"/> uses this factory to create new instance of private heap
         /// </summary>
-        /// <param name="heapFactory">Factory method</param>
+        /// <param name="heapFactory"><see cref="Func{TResult}"/></param>
         public static void SetPrivateHeapFactory(Func<IUnmanagedHeap> heapFactory)
         {
             HeapFactory.Value = heapFactory ?? throw new ArgumentNullException(nameof(heapFactory));
         }
 
         /// <summary>
-        /// Set instance of private heap to specified instance
+        /// Sets instance of private heap to specified instance
+        /// <see cref="Private"/> will return this instance for all subsequent calls till until it's disposed
+        /// <see cref="Current"/> will return this instance for all subsequent calls till until it's disposed
         /// </summary>
-        /// <param name="heap">Instance of heap</param>
-        /// <returns>Instance of heap</returns>
+        /// <param name="heap"><see cref="IUnmanagedHeap"/></param>
+        /// <returns><see cref="IUnmanagedHeap"/></returns>
         public static IUnmanagedHeap SetPrivateHeap(IUnmanagedHeap heap)
         {
             LocalHeap.Value = heap ?? throw new ArgumentNullException(nameof(heap));
@@ -64,61 +70,35 @@ namespace Heapy.Core.UnmanagedHeap
         }
 
         /// <summary>
-        /// Allocate unmanaged memory from <see cref="Current"/> heap.
+        /// Allocates a block of memory from <see cref="Current"/> heap. The allocated memory is not movable
         /// </summary>
-        /// <typeparam name="TValue">Type to map allocated memory to</typeparam>
-        /// <returns>Pointer to unmanaged memory</returns>
+        /// <typeparam name="TValue">The type of items in unmanaged memory</typeparam>
+        /// <returns><see cref="Unmanaged{TValue}"/></returns>
         public static Unmanaged<TValue> Alloc<TValue>() where TValue : unmanaged => Current.Alloc<TValue>();
 
         /// <summary>
-        /// Allocate unmanaged memory from <see cref="Current"/> heap and copies value from <see cref="value"/>
+        /// Allocates a block of memory from <see cref="Current"/> heap and copies <see cref="value"/> to allocated memory block. The allocated memory is not movable
         /// </summary>
-        /// <typeparam name="TValue">Type to map allocated memory to</typeparam>
+        /// <typeparam name="TValue">The type of items in unmanaged memory</typeparam>
         /// <param name="value">Value to copy to allocated memory</param>
-        /// <returns>Pointer to unmanaged memory</returns>
+        /// <returns><see cref="Unmanaged{TValue}"/></returns>
         public static Unmanaged<TValue> Alloc<TValue>(TValue value) where TValue : unmanaged => Current.Alloc<TValue>(value);
 
         /// <summary>
-        /// Allocate unmanaged memory of specified size <see cref="bytes"/>
+        /// Allocates a block of memory from <see cref="Current"/> heap. The allocated memory is not movable
         /// </summary>
-        /// <typeparam name="TValue">Type to map allocated memory to</typeparam>
-        /// <param name="bytes">Amount of memory to allocate</param>
-        /// <returns>Pointer to unmanaged memory</returns>
-        public static Unmanaged<TValue> Alloc<TValue>(uint bytes) where TValue : unmanaged => Current.Alloc<TValue>(bytes);
+        /// <typeparam name="TValue">The type of items in unmanaged memory</typeparam>
+        /// <param name="length">Length of contiguous memory block</param>
+        /// <returns><see cref="Unmanaged{TValue}"/></returns>
+        public static Unmanaged<TValue> Alloc<TValue>(int length) where TValue : unmanaged => Current.Alloc<TValue>(length);
 
         /// <summary>
-        /// Allocate unmanaged memory of specified size <see cref="bytes"/> with options 
+        /// Allocates a block of memory from <see cref="Current"/> heap. The allocated memory is not movable
         /// </summary>
-        /// <typeparam name="TValue">Type to map allocated memory to</typeparam>
-        /// <param name="bytes">Amount of memory to allocate</param>
+        /// <typeparam name="TValue">The type of items in unmanaged memory</typeparam>
+        /// <param name="length">Length of contiguous memory block</param>
         /// <param name="options">Platform specific allocation options</param>
-        /// <returns>Pointer to unmanaged memory</returns>
-        public static Unmanaged<TValue> Alloc<TValue>(uint bytes, uint options) where TValue : unmanaged => Current.Alloc<TValue>(bytes, options);
-
-        /// <summary>
-        /// ReAllocate memory to new size
-        /// </summary>
-        /// <typeparam name="TValue">Type to map allocated memory to</typeparam>
-        /// <param name="memory">Pointer to allocated memory</param>
-        /// <param name="bytes">New amount of memory to allocate</param>
-        /// <returns>Pointer to unmanaged memory</returns>
-        public static Unmanaged<TValue> Realloc<TValue>(IntPtr memory, uint bytes) where TValue : unmanaged => Current.Realloc<TValue>(memory, bytes);
-
-        /// <summary>
-        /// ReAllocate memory to new size with options
-        /// </summary>
-        /// <typeparam name="TValue">Type to map allocated memory to</typeparam>
-        /// <param name="memory">Pointer to allocated memory</param>
-        /// <param name="bytes">New amount of memory to allocate</param>
-        /// <param name="options">Platform specific allocation options</param>
-        /// <returns>Pointer to unmanaged memory</returns>
-        public static Unmanaged<TValue> Realloc<TValue>(IntPtr memory, uint bytes, uint options) where TValue : unmanaged => Current.Realloc<TValue>(memory, bytes, options);
-
-        /// <summary>
-        /// Deallocate memory
-        /// </summary>
-        /// <param name="memory">Memory to deallocate</param>
-        /// <returns>true - succeeded and false - in case of error</returns>
-        public static bool Free(IntPtr memory) => Current.Free(memory);
+        /// <returns><see cref="Unmanaged{TValue}"/></returns>
+        public static Unmanaged<TValue> Alloc<TValue>(int length, uint options) where TValue : unmanaged => Current.Alloc<TValue>(length, options);
     }
 }
