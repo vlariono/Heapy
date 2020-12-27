@@ -25,13 +25,18 @@ namespace Heapy.Core.UnmanagedHeap
         private bool _isFixedSize;
         private uint _version;
 
-        public Managed(Unmanaged<TValue> unmanagedValue)
+        public Managed(Unmanaged<TValue> unmanagedValue,bool preserveExisting = false)
         {
+            _count = 0;
             _version = 0;
             _isFixedSize = false;
             _ptr = (TValue*)unmanagedValue.Ptr;
             _heap = unmanagedValue.Heap;
-            _count = _length = unmanagedValue.Length;
+            _length = unmanagedValue.Length;
+            if (preserveExisting)
+            {
+                _count = _length;
+            }
         }
 
         public void Dispose()
@@ -50,6 +55,11 @@ namespace Heapy.Core.UnmanagedHeap
 
         /// <inheritdoc />
         public int Count => _count;
+
+        /// <summary>
+        /// Returns length of unmanaged memory block
+        /// </summary>
+        public int Length => _length;
 
         /// <inheritdoc />
         public bool IsReadOnly => false;
@@ -85,6 +95,7 @@ namespace Heapy.Core.UnmanagedHeap
         /// <inheritdoc />
         public IEnumerator<TValue> GetEnumerator()
         {
+            ThrowIfNotAvailable();
             return new Enumerator(this);
         }
 
@@ -114,7 +125,28 @@ namespace Heapy.Core.UnmanagedHeap
         /// <inheritdoc />
         public bool Contains(TValue item)
         {
-            throw new NotImplementedException();
+            ThrowIfNotAvailable();
+            return IndexOf(item) != -1;
+        }
+
+
+        /// <summary>
+        /// Returns the zero-based index of the first occurrence of a value
+        /// </summary>
+        /// <param name="item">The object to locate</param>
+        /// <returns></returns>
+        public int IndexOf(TValue item)
+        {
+            ThrowIfNotAvailable();
+            for (var i = 0; i < _count; i++)
+            {
+                if (this[i].Equals<TValue>(item))
+                {
+                    return i;
+                }
+            }
+
+            return -1;
         }
 
         /// <inheritdoc />
@@ -129,7 +161,16 @@ namespace Heapy.Core.UnmanagedHeap
         /// <inheritdoc />
         public bool Remove(TValue item)
         {
-            throw new NotImplementedException();
+            ThrowIfNotAvailable();
+            var itemIndex = IndexOf(item);
+            if (itemIndex == -1)
+            {
+                return false;
+            }
+
+            _version++;
+            RemoveAt(itemIndex);
+            return true;
         }
 
         /// <summary>
@@ -186,6 +227,7 @@ namespace Heapy.Core.UnmanagedHeap
         public void RemoveAt(int index)
         {
             ThrowIfNotAvailable();
+            ThrowIfOutOfRange(index);
             _version++;
             new Span<TValue>(_ptr,_count).RemoteAt(index);
         }

@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Runtime.CompilerServices;
 using Heapy.Core.UnmanagedHeap;
 
 namespace Heapy.Core.Extension
@@ -29,9 +30,25 @@ namespace Heapy.Core.Extension
             return unmanagedValue;
         }
 
-        public static Managed<TValue> ToManaged<TValue>(this Unmanaged<TValue> unmanagedValue) where TValue:unmanaged
+        public static Managed<TValue> ToManaged<TValue>(this Unmanaged<TValue> unmanagedValue, bool preserveExisting = false) where TValue:unmanaged
         {
-            return new(unmanagedValue);
+            return new(unmanagedValue,preserveExisting);
+        }
+
+        public static unsafe bool Equals<TValue>(this TValue firstValue, TValue secondValue) where TValue : unmanaged
+        {
+            var valueSize = sizeof(TValue);
+            if (valueSize <= 8)
+            {
+                ref var first = ref Unsafe.As<TValue,ulong>(ref firstValue);
+                ref var second = ref Unsafe.As<TValue,ulong>(ref secondValue);
+
+                return first == second;
+            }
+
+            var sourceSpan = new Span<byte>(&firstValue, valueSize);
+            var otherSpan = new Span<byte>(&secondValue, valueSize);
+            return sourceSpan.SequenceEqual(otherSpan);
         }
     }
 }

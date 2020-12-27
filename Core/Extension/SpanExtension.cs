@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Runtime.CompilerServices;
 
 namespace Heapy.Core.Extension
 {
@@ -20,19 +21,6 @@ namespace Heapy.Core.Extension
             var destinationSpan = span.Slice(index, span.Length - index);
             sourceSpan.CopyTo(destinationSpan);
             span[^1] = default;
-        }
-
-        public static unsafe bool Equals<TValue>(this TValue sourceValue, TValue otherValue) where TValue : unmanaged
-        {
-            if (&sourceValue == &otherValue)
-            {
-                return true;
-            }
-
-            var sourceSpan = new Span<byte>(&sourceValue, sizeof(TValue));
-            var otherSpan = new Span<byte>(&otherValue, sizeof(TValue));
-
-            return sourceSpan.SequenceEqual(otherSpan);
         }
     }
 }

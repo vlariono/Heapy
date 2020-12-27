@@ -11,6 +11,7 @@ namespace Run
     {
         public int I1 { get; set; }
         public int I2 { get; set; }
+        public int I3 { get; set; }
     }
 
     internal unsafe class Program
@@ -24,14 +25,36 @@ namespace Run
             using (var heap = Heap.GetPrivateHeap())
             {
 
-                watch.Start();
-                for (int i = 0; i < 100000000; i++)
+                var mem = Heap.Alloc<Test>().ToManaged();
+
+                var p = 100;
+                for (int i = 0; i < 10; i++)
                 {
-                    heap.Alloc<Test>();
+                    mem.Add(new Test()
+                    {
+                        I1 = p+1,
+                        I2 = p+2,
+                        I3 = p+3
+                    });
+                    p += 100;
                 }
-                watch.Stop();
-                var ms = watch.ElapsedMilliseconds;
-                Console.WriteLine($"Execution Time: {ms} ms");
+
+                var c = mem.Remove(
+                    new Test()
+                    {
+                        I1 = 301,
+                        I2 = 302,
+                        I3 = 303
+                    });
+
+                //watch.Start();
+                //for (int i = 0; i < 100000000; i++)
+                //{
+                //    heap.Alloc<Test>();
+                //}
+                //watch.Stop();
+                //var ms = watch.ElapsedMilliseconds;
+                //Console.WriteLine($"Execution Time: {ms} ms");
 
 
                 Console.WriteLine("Before  free");
