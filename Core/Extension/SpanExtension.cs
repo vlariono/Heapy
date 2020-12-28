@@ -5,7 +5,7 @@ namespace Heapy.Core.Extension
 {
     public static class SpanExtension
     {
-        public static void RemoteAt<TValue>(this Span<TValue> span, int index) where TValue : unmanaged
+        public static void RemoveAt<TValue>(this Span<TValue> span, int index) where TValue : unmanaged
         {
             if (0 > index || index >= span.Length)
             {

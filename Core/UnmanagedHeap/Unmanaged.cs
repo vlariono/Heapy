@@ -121,18 +121,7 @@ namespace Heapy.Core.UnmanagedHeap
         public void RemoveAt(int index)
         {
             ThrowIfNotAvailable();
-            _span.RemoteAt(index);
-        }
-
-        /// <summary>
-        /// Copies from <see cref="ReadOnlySpan{T}"/> to <see cref="Unmanaged{TValue}"/>
-        /// </summary>
-        /// <typeparam name="TValue">The type of items in unmanaged memory</typeparam>
-        /// <param name="span">Source <see cref="Span{T}"/></param>
-        public void CopyFrom(ReadOnlySpan<TValue> span)
-        {
-            ThrowIfNotAvailable();
-            span.CopyTo(_span);
+            _span.RemoveAt(index);
         }
 
         /// <summary>
