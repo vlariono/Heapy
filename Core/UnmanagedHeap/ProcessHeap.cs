@@ -53,7 +53,7 @@ namespace Heapy.Core.UnmanagedHeap
         {
             ThrowIfUnavailable();
             var unmanagedValue = Alloc<TValue>(1);
-            unmanagedValue.Value = value;
+            unmanagedValue[0] = value;
             return unmanagedValue;
         }
 

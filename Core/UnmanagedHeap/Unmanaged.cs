@@ -79,18 +79,6 @@ namespace Heapy.Core.UnmanagedHeap
                                 : UnmanagedState.Available;
 
         /// <summary>
-        /// Returns reference to first element
-        /// </summary>
-        public ref TValue Value
-        {
-            get
-            {
-                ThrowIfNotAvailable();
-                return ref _span[0];
-            }
-        }
-
-        /// <summary>
         /// Gets the element at the specified zero-based index
         /// </summary>
         /// <param name="index">The zero-based index of the element</param>
@@ -105,13 +93,24 @@ namespace Heapy.Core.UnmanagedHeap
         }
 
         /// <summary>
-        /// Creates a new span over unmanaged memory
+        /// Returns a span over unmanaged memory
         /// </summary>
         /// <returns><see cref="Span{T}"/></returns>
         public Span<TValue> AsSpan()
         {
             ThrowIfNotAvailable();
             return _span;
+        }
+
+        /// <summary>
+        /// Searches for the specified value and returns the index of its first occurrence
+        /// </summary>
+        /// <param name="value">The value to search for</param>
+        /// <returns>If succeeded - index of item, otherwise -1</returns>
+        public int IndexOf(TValue value)
+        {
+            ThrowIfNotAvailable();
+            return ((ReadOnlySpan<TValue>) _span).IndexOfByValue(value);
         }
 
         /// <summary>
@@ -126,7 +125,7 @@ namespace Heapy.Core.UnmanagedHeap
         }
 
         /// <summary>
-        /// Copies from <see cref="Span{T}"/> to <see cref="Unmanaged{TValue}"/>
+        /// Copies from <see cref="ReadOnlySpan{T}"/> to <see cref="Unmanaged{TValue}"/>
         /// </summary>
         /// <typeparam name="TValue">The type of items in unmanaged memory</typeparam>
         /// <param name="span">Source <see cref="Span{T}"/></param>
@@ -153,7 +152,6 @@ namespace Heapy.Core.UnmanagedHeap
             {
                 return;
             }
-
             throw new UnmanagedObjectUnavailable("Object has been disposed or heap is unavailable");
         }
 
@@ -167,9 +165,14 @@ namespace Heapy.Core.UnmanagedHeap
             throw new NotSupportedException(nameof(GetHashCode));
         }
 
+        public override string? ToString()
+        {
+            throw new NotImplementedException(nameof(ToString));
+        }
+
         public static implicit operator IntPtr(Unmanaged<TValue> unmanagedValue) => unmanagedValue.Ptr;
         public static unsafe implicit operator TValue*(Unmanaged<TValue> unmanagedValue) => (TValue*)unmanagedValue.Ptr;
-        public static implicit operator TValue(Unmanaged<TValue> unmanagedValue) => unmanagedValue.Value;
         public static implicit operator Span<TValue>(Unmanaged<TValue> unmanagedValue) => unmanagedValue.AsSpan();
+        public static implicit operator ReadOnlySpan<TValue>(Unmanaged<TValue> unmanagedValue) => unmanagedValue.AsSpan();
     }
 }

@@ -58,7 +58,7 @@ namespace Heapy.WindowsHeap.UnmanagedHeap
         public Unmanaged<TValue> Alloc<TValue>(TValue value) where TValue : unmanaged
         {
             var unmanagedValue = Alloc<TValue>(1,(uint) WindowsHeapOptions.Default);
-            unmanagedValue.Value = value;
+            unmanagedValue[0] = value;
             return unmanagedValue;
         }
 

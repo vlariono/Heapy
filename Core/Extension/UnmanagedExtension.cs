@@ -30,12 +30,15 @@ namespace Heapy.Core.Extension
             return unmanagedValue;
         }
 
-        public static Managed<TValue> ToManaged<TValue>(this Unmanaged<TValue> unmanagedValue, bool preserveExisting = false) where TValue:unmanaged
-        {
-            return new(unmanagedValue,preserveExisting);
-        }
-
-        public static unsafe bool Equals<TValue>(this TValue firstValue, TValue secondValue) where TValue : unmanaged
+        /// <summary>
+        /// Determines whether two values are equal
+        /// This method doesn't depends on <see cref="IEquatable{T}"/>
+        /// </summary>
+        /// <typeparam name="TValue">Type of value item</typeparam>
+        /// <param name="firstValue">First value</param>
+        /// <param name="secondValue">The value to compare with first value</param>
+        /// <returns></returns>
+        public static unsafe bool EqualsByValue<TValue>(this TValue firstValue, TValue secondValue) where TValue : unmanaged
         {
             var valueSize = sizeof(TValue);
             if (valueSize <= 8)

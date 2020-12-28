@@ -22,5 +22,26 @@ namespace Heapy.Core.Extension
             sourceSpan.CopyTo(destinationSpan);
             span[^1] = default;
         }
+
+        /// <summary>
+        /// Searches for the specified value and returns the index of its first occurrence
+        /// The method doesn't depend on <see cref="IEquatable{T}"/>
+        /// </summary>
+        /// <typeparam name="TValue">The type of the span and value</typeparam>
+        /// <param name="span">The span to search</param>
+        /// <param name="item">The value to search for</param>
+        /// <returns>If succeeded - index of item, otherwise -1</returns>
+        public static int IndexOfByValue<TValue>(this ReadOnlySpan<TValue> span, TValue item) where TValue : unmanaged
+        {
+            for (var i = 0; i < span.Length; i++)
+            {
+                if (span[i].EqualsByValue(item))
+                {
+                    return i;
+                }
+            }
+
+            return -1;
+        }
     }
 }
