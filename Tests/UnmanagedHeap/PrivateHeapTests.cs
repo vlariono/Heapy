@@ -64,7 +64,7 @@ namespace Tests.UnmanagedHeap
                 .Returns((IntPtr ptr, uint opt, IntPtr memory, IntPtr bytes) => ptr == _heapPtrFail ? IntPtr.Zero : _reallocPtr)
                 .Callback((IntPtr ptr, uint opt, IntPtr memory, IntPtr bytes) =>
                 {
-                    _passedPtr = ptr;
+                    _passedPtr = memory;
                     _passedOptions = opt;
                     _passedLength = bytes;
                 });
@@ -172,6 +172,7 @@ namespace Tests.UnmanagedHeap
         {
             var privateHeap = new PrivateHeap(_heapPtr, _fakeHeapNative);
             privateHeap.Dispose();
+            Assert.Equal(UnmanagedState.Unavailable,privateHeap.State);
             Assert.Throws<UnmanagedHeapUnavailable>(() => privateHeap.Alloc<Unmanaged8>());
             Assert.Throws<UnmanagedHeapUnavailable>(() => privateHeap.Alloc<Unmanaged8>(10));
             Assert.Throws<UnmanagedHeapUnavailable>(() => privateHeap.Alloc<Unmanaged16>(15,(uint) WindowsHeapOptions.CreateEnableExecute));
@@ -199,7 +200,7 @@ namespace Tests.UnmanagedHeap
             Assert.True(roSpan.Length == length);
 
             Assert.True(alloc.Heap == heap);
-
+            Assert.Equal(handle,_passedPtr);
             unsafe
             {
                 Assert.Equal((IntPtr)(sizeof(T) * length), _passedLength);
