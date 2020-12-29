@@ -1,8 +1,8 @@
 ﻿using System;
 
-namespace Heapy.WindowsHeap.Interface
+namespace Heapy.Core.Interface
 {
-    public interface IWindowsPrivateHeapNative
+    public interface IPrivateHeapNative
     {
         IntPtr HeapCreate(uint flOptions, IntPtr dwInitialSize, IntPtr dwMaximumSize);
         bool HeapDestroy(IntPtr hHeap);

@@ -1,15 +1,15 @@
 ﻿using System;
+using Heapy.Core;
 using Heapy.Core.Enum;
 using Heapy.Core.Exception;
 using Heapy.Core.Interface;
-using Heapy.WindowsHeap.Interface;
-using Heapy.WindowsHeap.UnmanagedHeap;
+using Heapy.Core.UnmanagedHeap;
 
 namespace Heapy.WindowsHeapPInvoke.UnmanagedHeap
 {
-    public sealed class WindowsPrivateHeapPInvoke:IWindowsPrivateHeapNative
+    public sealed class WindowsPrivateHeapPInvoke:IPrivateHeapNative
     {
-        private static readonly IWindowsPrivateHeapNative Kernel32Lib;
+        private static readonly IPrivateHeapNative Kernel32Lib;
 
         private WindowsPrivateHeapPInvoke() { }
         
@@ -31,7 +31,7 @@ namespace Heapy.WindowsHeapPInvoke.UnmanagedHeap
                 throw new UnmanagedHeapUnavailable("Failed to create heap");
             }
 
-            return new WindowsPrivateHeap(heapHandle,Kernel32Lib);
+            return new PrivateHeap(heapHandle,Kernel32Lib);
         }
         
         public IntPtr HeapCreate(uint flOptions, IntPtr dwInitialSize, IntPtr dwMaximumSize)

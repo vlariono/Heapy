@@ -19,12 +19,11 @@ namespace Run
         private static void Main(string[] args)
         {
             Console.WriteLine("Hello World!");
-            Heap.SetPrivateHeapFactory(WindowsPrivateHeapIndirect.Create);
             var watch = new System.Diagnostics.Stopwatch();
 
-            using (var heap = Heap.GetPrivateHeap())
+            using (var heap = WindowsPrivateHeapIndirect.Create())
             {
-                using (var mem = Heap.Alloc<Test>(100000000))
+                using (var mem = heap.Alloc<Test>(100000000))
                 {
                     watch.Start();
                     for (int i = 0; i < 100000000; i++)

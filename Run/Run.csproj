@@ -4,7 +4,6 @@
     <ProjectReference Include="..\Core\Heapy.Core.csproj" />
     <ProjectReference Include="..\WindowsHeapIndirect\Heapy.WindowsHeapIndirect.csproj" />
     <ProjectReference Include="..\WindowsHeapPInvoke\Heapy.WindowsHeapPInvoke.csproj" />
-    <ProjectReference Include="..\WindowsHeap\Heapy.WindowsHeap.csproj" />
   </ItemGroup>
 
   <PropertyGroup>

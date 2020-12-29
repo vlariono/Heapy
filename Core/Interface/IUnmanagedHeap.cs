@@ -19,14 +19,6 @@ namespace Heapy.Core.Interface
         Unmanaged<TValue> Alloc<TValue>() where TValue : unmanaged;
 
         /// <summary>
-        /// Allocates a block of memory from a heap and copies <see cref="value"/> to allocated memory block. The allocated memory is not movable
-        /// </summary>
-        /// <typeparam name="TValue">The type of items in unmanaged memory</typeparam>
-        /// <param name="value">Value to copy to allocated memory</param>
-        /// <returns><see cref="Unmanaged{TValue}"/></returns>
-        Unmanaged<TValue> Alloc<TValue>(TValue value) where TValue : unmanaged;
-
-        /// <summary>
         /// Allocates a block of memory from a heap. The allocated memory is not movable
         /// </summary>
         /// <typeparam name="TValue">The type of items in unmanaged memory</typeparam>

@@ -10,23 +10,19 @@ namespace Heapy.Core.UnmanagedHeap
     /// </summary>
     public sealed class ProcessHeap : IUnmanagedHeap
     {
-        private bool _disposed;
-        public ProcessHeap()
+        private static readonly ProcessHeap Heap;
+
+        static ProcessHeap()
         {
-            _disposed = false;
+            Heap = new ProcessHeap();
+        }
+
+        private ProcessHeap()
+        {
         }
 
         public void Dispose()
         {
-            _disposed = true;
-        }
-
-        private void ThrowIfUnavailable()
-        {
-            if (_disposed)
-            {
-                throw new ObjectDisposedException(nameof(ProcessHeap));
-            }
         }
 
         /// <summary>
@@ -35,7 +31,7 @@ namespace Heapy.Core.UnmanagedHeap
         /// <returns><see cref="IUnmanagedHeap"/></returns>
         public static IUnmanagedHeap Create()
         {
-            return new ProcessHeap();
+            return Heap;
         }
 
         /// <inheritdoc />
@@ -44,23 +40,12 @@ namespace Heapy.Core.UnmanagedHeap
         /// <inheritdoc />
         public Unmanaged<TValue> Alloc<TValue>() where TValue : unmanaged
         {
-            ThrowIfUnavailable();
             return Alloc<TValue>(1);
-        }
-
-        /// <inheritdoc />
-        public Unmanaged<TValue> Alloc<TValue>(TValue value) where TValue : unmanaged
-        {
-            ThrowIfUnavailable();
-            var unmanagedValue = Alloc<TValue>(1);
-            unmanagedValue[0] = value;
-            return unmanagedValue;
         }
 
         /// <inheritdoc />
         public unsafe Unmanaged<TValue> Alloc<TValue>(int length) where TValue : unmanaged
         {
-            ThrowIfUnavailable();
             var cb = new IntPtr(sizeof(TValue) * length);
             var allocHandle = Marshal.AllocHGlobal(cb);
             return new Unmanaged<TValue>(allocHandle, length, this);
@@ -75,7 +60,6 @@ namespace Heapy.Core.UnmanagedHeap
         /// <inheritdoc />
         public unsafe Unmanaged<TValue> Realloc<TValue>(IntPtr memory, int length) where TValue : unmanaged
         {
-            ThrowIfUnavailable();
             var cb = new IntPtr(sizeof(TValue) * length);
             var allocHandle = Marshal.ReAllocHGlobal(memory, cb);
             return new Unmanaged<TValue>(allocHandle,length, this);

@@ -12,7 +12,6 @@
 
   <ItemGroup>
     <ProjectReference Include="..\Core\Heapy.Core.csproj" />
-    <ProjectReference Include="..\WindowsHeap\Heapy.WindowsHeap.csproj" />
   </ItemGroup>
 
 </Project>

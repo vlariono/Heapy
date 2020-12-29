@@ -2,18 +2,16 @@
 using Heapy.Core.Enum;
 using Heapy.Core.Exception;
 using Heapy.Core.Interface;
-using Heapy.Core.UnmanagedHeap;
-using Heapy.WindowsHeap.Interface;
 
-namespace Heapy.WindowsHeap.UnmanagedHeap
+namespace Heapy.Core.UnmanagedHeap
 {
     /// <summary>
     /// Represent instance of windows specific private heap. Private heap supports disposal
     /// If the heap is disposed all previously allocated memory blocks in this heap are gone forever
     /// </summary>
-    public sealed class WindowsPrivateHeap : IUnmanagedHeap
+    public sealed class PrivateHeap : IUnmanagedHeap
     {
-        private readonly IWindowsPrivateHeapNative _kernel32Lib;
+        private readonly IPrivateHeapNative _privateHeapNative;
         private IntPtr _handle;
         private UnmanagedState _state;
 
@@ -22,10 +20,10 @@ namespace Heapy.WindowsHeap.UnmanagedHeap
         /// </summary>
         /// <param name="handle">Handle of private heap</param>
         /// <param name="kernel32Lib">Heap API implementation</param>
-        public WindowsPrivateHeap(IntPtr handle, IWindowsPrivateHeapNative kernel32Lib)
+        public PrivateHeap(IntPtr handle, IPrivateHeapNative kernel32Lib)
         {
             _handle = handle;
-            _kernel32Lib = kernel32Lib;
+            _privateHeapNative = kernel32Lib;
             _state = handle == IntPtr.Zero ? UnmanagedState.Unavailable : UnmanagedState.Available;
         }
 
@@ -36,14 +34,14 @@ namespace Heapy.WindowsHeap.UnmanagedHeap
         {
             if (_handle != IntPtr.Zero)
             {
-                _kernel32Lib.HeapDestroy(_handle);
+                _privateHeapNative.HeapDestroy(_handle);
                 _handle = IntPtr.Zero;
                 _state = UnmanagedState.Unavailable;
             }
             GC.SuppressFinalize(this);
         }
 
-        ~WindowsPrivateHeap()
+        ~PrivateHeap()
         {
             Dispose();
         }
@@ -52,14 +50,6 @@ namespace Heapy.WindowsHeap.UnmanagedHeap
         public Unmanaged<TValue> Alloc<TValue>() where TValue : unmanaged
         {
             return Alloc<TValue>(1,(uint) WindowsHeapOptions.Default);
-        }
-
-        /// <inheritdoc />
-        public Unmanaged<TValue> Alloc<TValue>(TValue value) where TValue : unmanaged
-        {
-            var unmanagedValue = Alloc<TValue>(1,(uint) WindowsHeapOptions.Default);
-            unmanagedValue[0] = value;
-            return unmanagedValue;
         }
 
         /// <inheritdoc />
@@ -72,7 +62,7 @@ namespace Heapy.WindowsHeap.UnmanagedHeap
         public unsafe Unmanaged<TValue> Alloc<TValue>(int length, uint options) where TValue : unmanaged
         {
             ThrowIfUnavailable();
-            var allocHandle = _kernel32Lib.HeapAlloc(_handle, options, (IntPtr)(sizeof(TValue) * length));
+            var allocHandle = _privateHeapNative.HeapAlloc(_handle, options, (IntPtr)(sizeof(TValue) * length));
             ThrowIfOutOfMemory(allocHandle);
             return new Unmanaged<TValue>(allocHandle, length, this);
         }
@@ -87,7 +77,7 @@ namespace Heapy.WindowsHeap.UnmanagedHeap
         public unsafe Unmanaged<TValue> Realloc<TValue>(IntPtr memory, int length, uint options) where TValue : unmanaged
         {
             ThrowIfUnavailable();
-            var allocHandle = _kernel32Lib.HeapReAlloc(_handle, options, memory, (IntPtr)(sizeof(TValue) * length));
+            var allocHandle = _privateHeapNative.HeapReAlloc(_handle, options, memory, (IntPtr)(sizeof(TValue) * length));
             ThrowIfOutOfMemory(allocHandle);
             return new Unmanaged<TValue>(allocHandle, length, this);
         }
@@ -95,7 +85,7 @@ namespace Heapy.WindowsHeap.UnmanagedHeap
         /// <inheritdoc />
         public bool Free(IntPtr memory)
         {
-            return _handle != IntPtr.Zero && _kernel32Lib.HeapFree(_handle, 0, memory);
+            return _handle != IntPtr.Zero && _privateHeapNative.HeapFree(_handle, 0, memory);
         }
 
         private void ThrowIfUnavailable()
