@@ -18,6 +18,7 @@ namespace Tests.UnmanagedHeap
 
         private uint _passedOptions;
         private IntPtr _passedPtr;
+        private IntPtr _passedHeapPtr;
         private IntPtr _passedLength;
 
         private struct Unmanaged8
@@ -51,7 +52,7 @@ namespace Tests.UnmanagedHeap
                 .Returns((IntPtr ptr, uint opt, IntPtr bytes) => ptr == _heapPtrFail ? IntPtr.Zero : _objectPtr)
                 .Callback((IntPtr ptr, uint opt, IntPtr bytes) =>
                     {
-                        _passedPtr = ptr;
+                        _passedHeapPtr = ptr;
                         _passedOptions = opt;
                         _passedLength = bytes;
                     });
@@ -64,6 +65,7 @@ namespace Tests.UnmanagedHeap
                 .Returns((IntPtr ptr, uint opt, IntPtr memory, IntPtr bytes) => ptr == _heapPtrFail ? IntPtr.Zero : _reallocPtr)
                 .Callback((IntPtr ptr, uint opt, IntPtr memory, IntPtr bytes) =>
                 {
+                    _passedHeapPtr = ptr;
                     _passedPtr = memory;
                     _passedOptions = opt;
                     _passedLength = bytes;
@@ -103,7 +105,7 @@ namespace Tests.UnmanagedHeap
         {
             var privateHeap = new PrivateHeap(_heapPtr, _fakeHeapNative);
             var alloc = privateHeap.Alloc<Unmanaged8>();
-            EnsureAllocationIsCorrect(alloc, _objectPtr, 1, privateHeap);
+            EnsureAllocationIsCorrect(alloc, _objectPtr, _heapPtr,1, privateHeap);
         }
 
         [Fact]
@@ -111,7 +113,7 @@ namespace Tests.UnmanagedHeap
         {
             var privateHeap = new PrivateHeap(_heapPtr, _fakeHeapNative);
             var alloc = privateHeap.Alloc<Unmanaged8>(5);
-            EnsureAllocationIsCorrect(alloc, _objectPtr, 5, privateHeap);
+            EnsureAllocationIsCorrect(alloc, _objectPtr, _heapPtr,5, privateHeap);
         }
 
         [Fact]
@@ -120,7 +122,7 @@ namespace Tests.UnmanagedHeap
             var options = WindowsHeapOptions.ZeroMemory | WindowsHeapOptions.GenerateExceptions;
             var privateHeap = new PrivateHeap(_heapPtr, _fakeHeapNative);
             var alloc = privateHeap.Alloc<Unmanaged8>(10, (uint)options);
-            EnsureAllocationIsCorrect(alloc, _objectPtr, 10, privateHeap);
+            EnsureAllocationIsCorrect(alloc, _objectPtr, _heapPtr,10, privateHeap);
             Assert.Equal((uint)options, _passedOptions);
         }
 
@@ -129,7 +131,7 @@ namespace Tests.UnmanagedHeap
         {
             var privateHeap = new PrivateHeap(_heapPtr, _fakeHeapNative);
             var alloc = privateHeap.Realloc<Unmanaged8>(_objectPtr, 10);
-            EnsureAllocationIsCorrect(alloc, _reallocPtr, 10, privateHeap);
+            EnsureAllocationIsCorrect(alloc, _reallocPtr,_heapPtr, 10, privateHeap);
         }
 
         [Fact]
@@ -138,7 +140,7 @@ namespace Tests.UnmanagedHeap
             var options = WindowsHeapOptions.ZeroMemory | WindowsHeapOptions.GenerateExceptions;
             var privateHeap = new PrivateHeap(_heapPtr, _fakeHeapNative);
             var alloc = privateHeap.Realloc<Unmanaged8>(_objectPtr, 10, (uint)options);
-            EnsureAllocationIsCorrect(alloc, _reallocPtr, 10, privateHeap);
+            EnsureAllocationIsCorrect(alloc, _reallocPtr,_heapPtr, 10, privateHeap);
             Assert.Equal((uint)options, _passedOptions);
         }
 
@@ -181,7 +183,7 @@ namespace Tests.UnmanagedHeap
             Assert.False(privateHeap.Free(_objectPtr));
         }
 
-        private void EnsureAllocationIsCorrect<T>(Unmanaged<T> alloc, IntPtr handle, int length, IUnmanagedHeap heap) where T : unmanaged
+        private void EnsureAllocationIsCorrect<T>(Unmanaged<T> alloc, IntPtr handle,IntPtr heapHandle, int length, IUnmanagedHeap heap) where T : unmanaged
         {
             Assert.Equal(handle, alloc.Ptr);
             Assert.Equal(handle, alloc);
@@ -200,7 +202,7 @@ namespace Tests.UnmanagedHeap
             Assert.True(roSpan.Length == length);
 
             Assert.True(alloc.Heap == heap);
-            Assert.Equal(handle,_passedPtr);
+            Assert.Equal(heapHandle,_passedHeapPtr);
             unsafe
             {
                 Assert.Equal((IntPtr)(sizeof(T) * length), _passedLength);
