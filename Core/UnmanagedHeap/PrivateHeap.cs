@@ -19,11 +19,11 @@ namespace Heapy.Core.UnmanagedHeap
         /// Initializes new instance of private heap
         /// </summary>
         /// <param name="handle">Handle of private heap</param>
-        /// <param name="kernel32Lib">Heap API implementation</param>
-        public PrivateHeap(IntPtr handle, IPrivateHeapNative kernel32Lib)
+        /// <param name="privateHeapNative">Heap API implementation</param>
+        public PrivateHeap(IntPtr handle, IPrivateHeapNative privateHeapNative)
         {
             _handle = handle;
-            _privateHeapNative = kernel32Lib;
+            _privateHeapNative = privateHeapNative;
             _state = handle == IntPtr.Zero ? UnmanagedState.Unavailable : UnmanagedState.Available;
         }
 
