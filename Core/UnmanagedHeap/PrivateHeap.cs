@@ -6,7 +6,7 @@ using Heapy.Core.Interface;
 namespace Heapy.Core.UnmanagedHeap
 {
     /// <summary>
-    /// Represent instance of windows specific private heap. Private heap supports disposal
+    /// Represent instance of platform specific private heap. Private heap supports disposal
     /// If the heap is disposed all previously allocated memory blocks in this heap are gone forever
     /// </summary>
     public sealed class PrivateHeap : IUnmanagedHeap
