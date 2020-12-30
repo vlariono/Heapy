@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Runtime.CompilerServices;
 using Heapy.Core.Enum;
 using Heapy.Core.Exception;
 using Heapy.Core.Interface;
@@ -13,7 +14,7 @@ namespace Heapy.Core.UnmanagedHeap
     {
         private readonly IPrivateHeapNative _privateHeapNative;
         private IntPtr _handle;
-        private UnmanagedState _state;
+        private bool _disposed;
 
         /// <summary>
         /// Initializes new instance of private heap
@@ -24,19 +25,18 @@ namespace Heapy.Core.UnmanagedHeap
         {
             _handle = handle;
             _privateHeapNative = privateHeapNative;
-            _state = handle == IntPtr.Zero ? UnmanagedState.Unavailable : UnmanagedState.Available;
         }
 
         /// <inheritdoc />
-        public UnmanagedState State => _state;
+        //public UnmanagedState State => _state;
 
         public void Dispose()
         {
-            if (_handle != IntPtr.Zero)
+            if (!_disposed)
             {
                 _privateHeapNative.HeapDestroy(_handle);
                 _handle = IntPtr.Zero;
-                _state = UnmanagedState.Unavailable;
+                _disposed = true;
             }
             GC.SuppressFinalize(this);
         }
@@ -61,7 +61,7 @@ namespace Heapy.Core.UnmanagedHeap
         /// <inheritdoc />
         public unsafe Unmanaged<TValue> Alloc<TValue>(int length, uint options) where TValue : unmanaged
         {
-            ThrowIfUnavailable();
+            ThrowIfNotAvailable();
             var allocHandle = _privateHeapNative.HeapAlloc(_handle, options, (IntPtr)(sizeof(TValue) * length));
             ThrowIfOutOfMemory(allocHandle);
             return new Unmanaged<TValue>(allocHandle, length, this);
@@ -76,7 +76,7 @@ namespace Heapy.Core.UnmanagedHeap
         /// <inheritdoc />
         public unsafe Unmanaged<TValue> Realloc<TValue>(IntPtr memory, int length, uint options) where TValue : unmanaged
         {
-            ThrowIfUnavailable();
+            ThrowIfNotAvailable();
             var allocHandle = _privateHeapNative.HeapReAlloc(_handle, options, memory, (IntPtr)(sizeof(TValue) * length));
             ThrowIfOutOfMemory(allocHandle);
             return new Unmanaged<TValue>(allocHandle, length, this);
@@ -88,11 +88,11 @@ namespace Heapy.Core.UnmanagedHeap
             return _handle != IntPtr.Zero && _privateHeapNative.HeapFree(_handle, 0, memory);
         }
 
-        private void ThrowIfUnavailable()
+        public void ThrowIfNotAvailable()
         {
-            if (_handle == IntPtr.Zero)
+            if (_disposed)
             {
-                throw new UnmanagedHeapUnavailable("Heap is readonly or disposed");
+                throw new UnmanagedHeapUnavailable("Private heap is unavailable");
             }
         }
 

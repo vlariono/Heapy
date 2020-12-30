@@ -47,15 +47,6 @@ namespace Tests.UnmanagedHeap
         }
 
         [Fact]
-        public void UnmanagedState_IsCorrect()
-        {
-            var mem = _heap.Alloc<UnmanagedTest>();
-            Assert.Equal(UnmanagedState.Available,mem.State);
-            mem.Dispose();
-            Assert.Equal(UnmanagedState.Unavailable,mem.State);
-        }
-
-        [Fact]
         public unsafe void UnmanagedProperties_IsCorrect()
         {
             using var mem = _heap.Alloc<UnmanagedTest>(50);

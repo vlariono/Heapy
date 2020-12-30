@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.Threading.Tasks;
 using Heapy.Core.Extension;
 using Heapy.Core.UnmanagedHeap;
@@ -14,35 +15,64 @@ namespace Run
         //public int I3 { get; set; }
     }
 
-    internal unsafe class Program
+    internal static class Program
     {
         private static void Main(string[] args)
         {
-            Console.WriteLine("Hello World!");
             var watch = new System.Diagnostics.Stopwatch();
+            Console.WriteLine("Array");
+            var b = new Test[100000000];
+            watch.Start();
+            for (int i = 0; i < 100000000; i++)
+            {
+                b[i] = new Test();
+            }
+            watch.Stop();
+            Console.WriteLine($"Execution Time: {watch.ElapsedMilliseconds} ms");
+            b = null;
 
+            watch.Reset();
+            Console.WriteLine("List");
+            var l = new List<Test>();
+            watch.Start();
+            for (int i = 0; i < 100000000; i++)
+            {
+                l.Add(new Test());
+            }
+            watch.Stop();
+            Console.WriteLine($"Execution Time: {watch.ElapsedMilliseconds} ms");
+
+            watch.Reset();
+            Console.WriteLine("Unmanaged");
             using (var heap = WindowsPrivateHeapIndirect.Create())
             {
-                using (var list = heap.AllocExpandable<Test>())
+                using (var unm = heap.Alloc<Test>(100000000))
                 {
                     watch.Start();
                     for (int i = 0; i < 100000000; i++)
                     {
-                        list.Add(new Test());
+                        unm[i] = new Test();
                     }
-
                     watch.Stop();
-                    var ms = watch.ElapsedMilliseconds;
-                    Console.WriteLine($"Execution Time: {ms} ms");
-
+                    Console.WriteLine($"Execution Time: {watch.ElapsedMilliseconds} ms");
                 }
+            }
 
-                Console.WriteLine("Before  free");
-                //Console.ReadLine();
+            watch.Reset();
+            Console.WriteLine("Expandable");
+            using (var heap = WindowsPrivateHeapIndirect.Create())
+            {
+                using var exp = heap.AllocExpandable<Test>();
+                watch.Start();
+                for (int i = 0; i < 100000000; i++)
+                {
+                    exp.Add(new Test());
+                }
+                watch.Stop();
+                Console.WriteLine($"Execution Time: {watch.ElapsedMilliseconds} ms");
             }
 
             Console.WriteLine($"Heap disposed");
-            Console.ReadLine(); ;
         }
     }
 }

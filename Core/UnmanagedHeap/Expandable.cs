@@ -14,11 +14,10 @@ namespace Heapy.Core.UnmanagedHeap
         private int _count;
         private bool _isFixed;
         private TValue* _memory;
+        private bool _disposed;
 
-        public Expandable(int length, IUnmanagedHeap heap)
+        public Expandable(int length, IUnmanagedHeap heap):this()
         {
-            _count = 0;
-            _isFixed = false;
             _length = length;
             _heap = heap;
             _memory = heap.Alloc<TValue>(length);
@@ -26,16 +25,13 @@ namespace Heapy.Core.UnmanagedHeap
 
         public void Dispose()
         {
-            if (State == UnmanagedState.Available)
+            if (!_disposed)
             {
                 _heap.Free((IntPtr)_memory);
                 _memory = (TValue*)IntPtr.Zero;
+                _disposed = true;
             }
         }
-
-        public UnmanagedState State => (IntPtr)_memory == IntPtr.Zero || _heap.State != UnmanagedState.Available
-            ? UnmanagedState.Unavailable
-            : UnmanagedState.Available;
 
         /// <summary>
         /// Returns length of memory block
@@ -76,7 +72,7 @@ namespace Heapy.Core.UnmanagedHeap
         /// <param name="length">Length of new memory block</param>
         public void Resize(int length)
         {
-            ThrowIfUnavailable();
+            ThrowIfNotAvailable();
             if (_isFixed)
             {
                 throw new InvalidOperationException("Memory block is fixed and cannot be resized");
@@ -103,7 +99,7 @@ namespace Heapy.Core.UnmanagedHeap
         /// <param name="item">The item to be added</param>
         public void Add(TValue item)
         {
-            ThrowIfUnavailable();
+            ThrowIfNotAvailable();
             if (_count >= _length)
             {
                 Resize(Math.Max(1, _length * 2));
@@ -118,7 +114,7 @@ namespace Heapy.Core.UnmanagedHeap
         /// <param name="values">Items to be added to memory block</param>
         public void AddRange(ReadOnlySpan<TValue> values)
         {
-            ThrowIfUnavailable();
+            ThrowIfNotAvailable();
             var requiredCount = _count + values.Length;
             if (requiredCount >= _length)
             {
@@ -137,7 +133,7 @@ namespace Heapy.Core.UnmanagedHeap
         /// <param name="index">The zero-based index of the element to remove</param>
         public void RemoveAt(int index)
         {
-            ThrowIfUnavailable();
+            ThrowIfNotAvailable();
             ThrowIfOutOfRange(index);
             new Span<TValue>(_memory, _count).RemoveAt(index);
             _count--;
@@ -150,7 +146,7 @@ namespace Heapy.Core.UnmanagedHeap
         /// <returns>If succeeded - index of item, otherwise -1</returns>
         public int IndexOf(TValue item)
         {
-            ThrowIfUnavailable();
+            ThrowIfNotAvailable();
             var span = new Span<TValue>(_memory, _count);
             return span.IndexOfByValue(ref item);
         }
@@ -162,7 +158,7 @@ namespace Heapy.Core.UnmanagedHeap
         /// <param name="span">Destination <see cref="Span{T}"/></param>
         public void CopyTo(Span<TValue> span)
         {
-            ThrowIfUnavailable();
+            ThrowIfNotAvailable();
             var sourceSpan = new Span<TValue>(_memory, _count);
             sourceSpan.CopyTo(span);
         }
@@ -180,14 +176,14 @@ namespace Heapy.Core.UnmanagedHeap
 
         private TValue GetByIndex(int index)
         {
-            ThrowIfUnavailable();
+            ThrowIfNotAvailable();
             ThrowIfOutOfRange(index);
             return _memory[index];
         }
 
         private void SetByIndex(int index, TValue value)
         {
-            ThrowIfUnavailable();
+            ThrowIfNotAvailable();
             ThrowIfOutOfRange(index);
             _memory[index] = value;
         }
@@ -200,12 +196,13 @@ namespace Heapy.Core.UnmanagedHeap
             }
         }
 
-        private void ThrowIfUnavailable()
+        private void ThrowIfNotAvailable()
         {
-            if (State != UnmanagedState.Available)
+            if (_disposed)
             {
                 throw new UnmanagedObjectUnavailable();
             }
+            _heap.ThrowIfNotAvailable();
         }
 
         #region Unsupported

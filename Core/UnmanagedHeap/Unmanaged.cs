@@ -1,4 +1,5 @@
 using System;
+using System.Runtime.CompilerServices;
 using Heapy.Core.Enum;
 using Heapy.Core.Exception;
 using Heapy.Core.Extension;
@@ -15,6 +16,7 @@ namespace Heapy.Core.UnmanagedHeap
         private readonly IUnmanagedHeap _heap;
         private readonly Span<TValue> _span;
         private IntPtr _memory;
+        private bool _disposed;
 
         public unsafe Unmanaged(IntPtr memory, int length, IUnmanagedHeap heap) : this()
         {
@@ -35,10 +37,11 @@ namespace Heapy.Core.UnmanagedHeap
 
         public void Dispose()
         {
-            if (State == UnmanagedState.Available)
+            if (!_disposed)
             {
                 _heap.Free(_memory);
                 _memory = IntPtr.Zero;
+                _disposed = true;
             }
         }
 
@@ -70,13 +73,6 @@ namespace Heapy.Core.UnmanagedHeap
         /// Returns heap where memory is allocated <see cref="IUnmanagedHeap"/>
         /// </summary>
         public IUnmanagedHeap Heap => _heap;
-
-        /// <summary>
-        /// Returns state of allocated memory <see cref="UnmanagedState"/>
-        /// </summary>
-        public UnmanagedState State => _memory == IntPtr.Zero || _heap.State != UnmanagedState.Available
-                                ? UnmanagedState.Unavailable
-                                : UnmanagedState.Available;
 
         /// <summary>
         /// Shortcut to first element in memory block
@@ -140,13 +136,14 @@ namespace Heapy.Core.UnmanagedHeap
             _span.CopyTo(span);
         }
 
-        private void ThrowIfNotAvailable()
+        public void ThrowIfNotAvailable()
         {
-            if (State == UnmanagedState.Available)
+            if (_disposed)
             {
-                return;
+                throw new UnmanagedObjectUnavailable("Object has been disposed or heap is unavailable");
             }
-            throw new UnmanagedObjectUnavailable("Object has been disposed or heap is unavailable");
+
+            _heap.ThrowIfNotAvailable();
         }
 
         #region Unsupported

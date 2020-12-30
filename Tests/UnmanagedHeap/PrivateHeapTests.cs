@@ -84,23 +84,6 @@ namespace Tests.UnmanagedHeap
         }
 
         [Fact]
-        public void HandleIsZero_StateIsUnavailable()
-        {
-            var privateHeap = new PrivateHeap(IntPtr.Zero, _fakeHeapNative);
-            Assert.Equal(UnmanagedState.Unavailable, privateHeap.State);
-        }
-
-        [Fact]
-        public void Dispose_HandleIsZeroStateIsUnavailable()
-        {
-            var privateHeap = new PrivateHeap(_heapPtr, _fakeHeapNative);
-            Assert.Equal(UnmanagedState.Available, privateHeap.State);
-
-            privateHeap.Dispose();
-            Assert.Equal(UnmanagedState.Unavailable, privateHeap.State);
-        }
-
-        [Fact]
         public void Alloc_SingleObject()
         {
             var privateHeap = new PrivateHeap(_heapPtr, _fakeHeapNative);
@@ -174,7 +157,6 @@ namespace Tests.UnmanagedHeap
         {
             var privateHeap = new PrivateHeap(_heapPtr, _fakeHeapNative);
             privateHeap.Dispose();
-            Assert.Equal(UnmanagedState.Unavailable,privateHeap.State);
             Assert.Throws<UnmanagedHeapUnavailable>(() => privateHeap.Alloc<Unmanaged8>());
             Assert.Throws<UnmanagedHeapUnavailable>(() => privateHeap.Alloc<Unmanaged8>(10));
             Assert.Throws<UnmanagedHeapUnavailable>(() => privateHeap.Alloc<Unmanaged16>(15,(uint) WindowsHeapOptions.CreateEnableExecute));
@@ -193,7 +175,6 @@ namespace Tests.UnmanagedHeap
                 Assert.True(ptr == alloc);
             }
 
-            Assert.Equal(UnmanagedState.Available, alloc.State);
             Assert.Equal(length, alloc.Length);
 
             Span<T> span = alloc;

@@ -1,16 +1,12 @@
 using System;
 using Heapy.Core.Enum;
+using Heapy.Core.Exception;
 using Heapy.Core.UnmanagedHeap;
 
 namespace Heapy.Core.Interface
 {
     public interface IUnmanagedHeap : IDisposable
     {
-        /// <summary>
-        /// Returns state of the heap <see cref="UnmanagedState"/>
-        /// </summary>
-        UnmanagedState State { get; }
-
         /// <summary>
         /// Allocates a block of memory from a heap. The allocated memory is not movable
         /// </summary>
@@ -60,5 +56,10 @@ namespace Heapy.Core.Interface
         /// <param name="memory">A pointer to the memory block to be freed. </param>
         /// <returns>If the function succeeds - true, otherwise - false</returns>
         bool Free(IntPtr memory);
+
+        /// <summary>
+        /// Throws <see cref="UnmanagedHeapUnavailable"/> exception if heap is not available
+        /// </summary>
+        void ThrowIfNotAvailable();
     }
 }
