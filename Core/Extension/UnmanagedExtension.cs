@@ -37,5 +37,10 @@ namespace Heapy.Core.Extension
         {
             return new(4, heap);
         }
+
+        public static Expandable<TValue> AllocExpandable<TValue>(this IUnmanagedHeap heap,int length) where TValue:unmanaged
+        {
+            return new(Math.Max(4,length), heap);
+        }
     }
 }

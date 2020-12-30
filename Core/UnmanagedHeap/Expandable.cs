@@ -49,10 +49,24 @@ namespace Heapy.Core.UnmanagedHeap
         public int Count => _count;
         public IUnmanagedHeap Heap => _heap;
         public bool IsFixed => _isFixed;
+
+        /// <summary>
+        /// Returns unmanaged pointer to unmanaged memory block
+        /// Once pointer is returned memory block will have fixed size
+        /// </summary>
+        public IntPtr Ptr
+        {
+            get
+            {
+                _isFixed = true;
+                return (IntPtr) _memory;
+            }
+        }
+
         public void Resize(int length)
         {
             ThrowIfUnavailable();
-            if (IsFixed)
+            if (_isFixed)
             {
                 throw new InvalidOperationException("Memory block is fixed and cannot be resized");
             }
