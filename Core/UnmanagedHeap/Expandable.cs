@@ -1,5 +1,4 @@
 ﻿using System;
-using System.Collections.Generic;
 using Heapy.Core.Enum;
 using Heapy.Core.Exception;
 using Heapy.Core.Extension;
@@ -47,7 +46,15 @@ namespace Heapy.Core.UnmanagedHeap
         /// Returns current number of items in the memory block
         /// </summary>
         public int Count => _count;
+
+        /// <summary>
+        /// Returns heap where memory is allocated <see cref="IUnmanagedHeap"/>
+        /// </summary>
         public IUnmanagedHeap Heap => _heap;
+
+        /// <summary>
+        /// Returns true is memory block has fixed size
+        /// </summary>
         public bool IsFixed => _isFixed;
 
         /// <summary>
@@ -63,6 +70,10 @@ namespace Heapy.Core.UnmanagedHeap
             }
         }
 
+        /// <summary>
+        /// Resize memory block
+        /// </summary>
+        /// <param name="length">Length of new memory block</param>
         public void Resize(int length)
         {
             ThrowIfUnavailable();
@@ -74,12 +85,22 @@ namespace Heapy.Core.UnmanagedHeap
             _length = length;
         }
 
+        /// <summary>
+        /// Gets the element at the specified zero-based index
+        /// </summary>
+        /// <param name="index">The zero-based index of the element</param>
+        /// <returns><see cref="TValue"/></returns>
         public TValue this[int index]
         {
             get => GetByIndex(index);
             set => SetByIndex(index, value);
         }
 
+
+        /// <summary>
+        /// Adds an item to the end of the memory block
+        /// </summary>
+        /// <param name="item">The item to be added</param>
         public void Add(TValue item)
         {
             ThrowIfUnavailable();
@@ -91,6 +112,10 @@ namespace Heapy.Core.UnmanagedHeap
             _memory[_count++] = item;
         }
 
+        /// <summary>
+        /// Adds the items of the span to the end of memory block
+        /// </summary>
+        /// <param name="values">Items to be added to memory block</param>
         public void AddRange(ReadOnlySpan<TValue> values)
         {
             ThrowIfUnavailable();
@@ -100,11 +125,16 @@ namespace Heapy.Core.UnmanagedHeap
                 Resize(requiredCount);
             }
 
-            var span = new Span<TValue>(_memory, _length);
+            var span = new Span<TValue>(_memory, _length).Slice(_count);
             values.CopyTo(span);
             _count = requiredCount;
         }
 
+        /// <summary>
+        /// Removes the element at the specified index
+        /// </summary>
+        /// <typeparam name="TValue">The type of items in unmanaged memory</typeparam>
+        /// <param name="index">The zero-based index of the element to remove</param>
         public void RemoveAt(int index)
         {
             ThrowIfUnavailable();
@@ -113,11 +143,28 @@ namespace Heapy.Core.UnmanagedHeap
             _count--;
         }
 
+        /// <summary>
+        /// Searches for the specified value and returns the index of its first occurrence
+        /// </summary>
+        /// <param name="item">The value to search for</param>
+        /// <returns>If succeeded - index of item, otherwise -1</returns>
         public int IndexOf(TValue item)
         {
             ThrowIfUnavailable();
             var span = new Span<TValue>(_memory, _count);
             return span.IndexOfByValue(ref item);
+        }
+
+        /// <summary>
+        /// Copies from <see cref="Unmanaged{TValue}"/> to <see cref="Span{T}"/>
+        /// </summary>
+        /// <typeparam name="TValue">The type of items in unmanaged memory</typeparam>
+        /// <param name="span">Destination <see cref="Span{T}"/></param>
+        public void CopyTo(Span<TValue> span)
+        {
+            ThrowIfUnavailable();
+            var sourceSpan = new Span<TValue>(_memory, _count);
+            sourceSpan.CopyTo(span);
         }
 
         /// <summary>
@@ -160,5 +207,25 @@ namespace Heapy.Core.UnmanagedHeap
                 throw new UnmanagedObjectUnavailable();
             }
         }
+
+        #region Unsupported
+        [Obsolete("The method is unsupported")]
+        public override bool Equals(object? obj)
+        {
+            throw new NotSupportedException(nameof(Equals));
+        }
+
+        [Obsolete("The method is unsupported")]
+        public override int GetHashCode()
+        {
+            throw new NotSupportedException(nameof(GetHashCode));
+        }
+
+        [Obsolete("The method is unsupported")]
+        public override string? ToString()
+        {
+            throw new NotImplementedException(nameof(ToString));
+        }
+        #endregion
     }
 }
