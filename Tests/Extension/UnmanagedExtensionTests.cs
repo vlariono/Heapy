@@ -35,21 +35,21 @@ namespace Tests.Extension
         {
             var value1 = new UnmanagedTest1() { I1 = 100, I2 = 200 };
             var value2 = new UnmanagedTest1() { I1 = 100, I2 = 200 };
-            Assert.True(value1.EqualsByValue(value2));
+            Assert.True(value1.EqualsByValue(ref value2));
 
             var value3 = new UnmanagedTest2() { I1 = 1000, L2 = 2000 };
             var value4 = new UnmanagedTest2() { I1 = 1000, L2 = 2000 };
-            Assert.True(value3.EqualsByValue(value4));
+            Assert.True(value3.EqualsByValue(ref value4));
 
             var value5 = new UnmanagedTest3() { L1 = 10000, L2 = 20000 };
             var value6 = new UnmanagedTest3() { L1 = 10000, L2 = 20000 };
-            Assert.True(value5.EqualsByValue(value6));
+            Assert.True(value5.EqualsByValue(ref value6));
 
             var value7 = new UnmanagedTest4() { L1 = 10000, L2 = 20000 };
             var value8 = new UnmanagedTest4() { L1 = 10000, L2 = 20000 };
             value7.Bytes[1] = 112;
             value8.Bytes[1] = 112;
-            Assert.True(value7.EqualsByValue(value8));
+            Assert.True(value7.EqualsByValue(ref value8));
         }
 
         [Fact]
@@ -57,21 +57,21 @@ namespace Tests.Extension
         {
             var value1 = new UnmanagedTest1() { I1 = 150, I2 = 200 };
             var value2 = new UnmanagedTest1() { I1 = 100, I2 = 200 };
-            Assert.False(value1.EqualsByValue(value2));
+            Assert.False(value1.EqualsByValue(ref value2));
 
             var value3 = new UnmanagedTest2() { I1 = 1000, L2 = 2000 };
             var value4 = new UnmanagedTest2() { I1 = 1000, L2 = 2500 };
-            Assert.False(value3.EqualsByValue(value4));
+            Assert.False(value3.EqualsByValue(ref value4));
 
             var value5 = new UnmanagedTest3() { L1 = 10000, L2 = 20000 };
             var value6 = new UnmanagedTest3() { L1 = 10050, L2 = 20000 };
-            Assert.False(value5.EqualsByValue(value6));
+            Assert.False(value5.EqualsByValue(ref value6));
 
             var value7 = new UnmanagedTest4() { L1 = 10000, L2 = 20000 };
             var value8 = new UnmanagedTest4() { L1 = 10000, L2 = 20000 };
             value7.Bytes[0] = 112;
             value8.Bytes[1] = 112;
-            Assert.False(value7.EqualsByValue(value8));
+            Assert.False(value7.EqualsByValue(ref value8));
         }
     }
 }

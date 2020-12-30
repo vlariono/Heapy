@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Runtime.CompilerServices;
+using Heapy.Core.Interface;
 using Heapy.Core.UnmanagedHeap;
 
 namespace Heapy.Core.Extension
@@ -14,7 +15,7 @@ namespace Heapy.Core.Extension
         /// <param name="firstValue">First value</param>
         /// <param name="secondValue">The value to compare with first value</param>
         /// <returns></returns>
-        public static unsafe bool EqualsByValue<TValue>(this TValue firstValue, TValue secondValue) where TValue : unmanaged
+        public static unsafe bool EqualsByValue<TValue>(this ref TValue firstValue, ref TValue secondValue) where TValue : unmanaged
         {
             var valueSize = sizeof(TValue);
             if (valueSize <= 8)
@@ -25,9 +26,16 @@ namespace Heapy.Core.Extension
                 return first == second;
             }
 
-            var sourceSpan = new Span<byte>(&firstValue, valueSize);
-            var otherSpan = new Span<byte>(&secondValue, valueSize);
+            var sourcePtr = Unsafe.AsPointer(ref firstValue);
+            var destinationPtr = Unsafe.AsPointer(ref secondValue);
+            var sourceSpan = new Span<byte>(sourcePtr, valueSize);
+            var otherSpan = new Span<byte>(destinationPtr, valueSize);
             return sourceSpan.SequenceEqual(otherSpan);
+        }
+
+        public static Expandable<TValue> AllocExpandable<TValue>(this IUnmanagedHeap heap) where TValue:unmanaged
+        {
+            return new(4, heap);
         }
     }
 }

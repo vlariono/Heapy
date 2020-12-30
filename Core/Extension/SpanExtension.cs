@@ -23,6 +23,7 @@ namespace Heapy.Core.Extension
             span[^1] = default;
         }
 
+
         /// <summary>
         /// Searches for the specified value and returns the index of its first occurrence
         /// The method doesn't depend on <see cref="IEquatable{T}"/>
@@ -31,11 +32,11 @@ namespace Heapy.Core.Extension
         /// <param name="span">The span to search</param>
         /// <param name="item">The value to search for</param>
         /// <returns>If succeeded - index of item, otherwise -1</returns>
-        public static int IndexOfByValue<TValue>(this ReadOnlySpan<TValue> span, TValue item) where TValue : unmanaged
+        public static int IndexOfByValue<TValue>(this Span<TValue> span, ref TValue item) where TValue : unmanaged
         {
             for (var i = 0; i < span.Length; i++)
             {
-                if (span[i].EqualsByValue(item))
+                if (span[i].EqualsByValue(ref item))
                 {
                     return i;
                 }

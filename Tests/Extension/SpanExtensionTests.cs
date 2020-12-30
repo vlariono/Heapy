@@ -51,8 +51,8 @@ namespace Tests.Extension
         [InlineData(3)]
         public void IndexOfByValue_ReturnsIndex(int index)
         {
-            var roSpan = (ReadOnlySpan<UnmanagedTest>) _array.AsSpan();
-            var indexResult = roSpan.IndexOfByValue(_array[index]);
+            var roSpan =  _array.AsSpan();
+            var indexResult = roSpan.IndexOfByValue(ref _array[index]);
             Assert.Equal(index,indexResult);
         }
 
@@ -63,8 +63,8 @@ namespace Tests.Extension
         {
             try
             {
-                var roSpan = (ReadOnlySpan<UnmanagedTest>) _array.AsSpan();
-                roSpan.IndexOfByValue(_array[index]);
+                var roSpan = _array.AsSpan();
+                roSpan.IndexOfByValue(ref _array[index]);
             }
             catch(Exception e)
             {

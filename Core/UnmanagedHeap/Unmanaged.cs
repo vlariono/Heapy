@@ -14,31 +14,31 @@ namespace Heapy.Core.UnmanagedHeap
     {
         private readonly IUnmanagedHeap _heap;
         private readonly Span<TValue> _span;
-        private IntPtr _ptr;
+        private IntPtr _memory;
 
-        public unsafe Unmanaged(IntPtr ptr, int length, IUnmanagedHeap heap) : this()
+        public unsafe Unmanaged(IntPtr memory, int length, IUnmanagedHeap heap) : this()
         {
             if (heap == null)
             {
                 throw new ArgumentNullException(nameof(heap));
             }
 
-            if (ptr == IntPtr.Zero)
+            if (memory == IntPtr.Zero)
             {
-                throw new ArgumentNullException(nameof(ptr));
+                throw new ArgumentNullException(nameof(memory));
             }
 
-            _ptr = ptr;
+            _memory = memory;
             _heap = heap;
-            _span = new Span<TValue>((TValue*)ptr, length);
+            _span = new Span<TValue>((TValue*)memory, length);
         }
 
         public void Dispose()
         {
             if (State == UnmanagedState.Available)
             {
-                _heap.Free(_ptr);
-                _ptr = IntPtr.Zero;
+                _heap.Free(_memory);
+                _memory = IntPtr.Zero;
             }
         }
 
@@ -62,7 +62,7 @@ namespace Heapy.Core.UnmanagedHeap
             get
             {
                 ThrowIfNotAvailable();
-                return _ptr;
+                return _memory;
             }
         }
 
@@ -74,9 +74,14 @@ namespace Heapy.Core.UnmanagedHeap
         /// <summary>
         /// Returns state of allocated memory <see cref="UnmanagedState"/>
         /// </summary>
-        public UnmanagedState State => _ptr == IntPtr.Zero || _heap.State != UnmanagedState.Available
+        public UnmanagedState State => _memory == IntPtr.Zero || _heap.State != UnmanagedState.Available
                                 ? UnmanagedState.Unavailable
                                 : UnmanagedState.Available;
+
+        /// <summary>
+        /// Shortcut to first element in memory block
+        /// </summary>
+        public ref TValue First => ref this[0];
 
         /// <summary>
         /// Gets the element at the specified zero-based index
@@ -110,7 +115,7 @@ namespace Heapy.Core.UnmanagedHeap
         public int IndexOf(TValue value)
         {
             ThrowIfNotAvailable();
-            return ((ReadOnlySpan<TValue>) _span).IndexOfByValue(value);
+            return _span.IndexOfByValue(ref value);
         }
 
         /// <summary>
@@ -144,20 +149,25 @@ namespace Heapy.Core.UnmanagedHeap
             throw new UnmanagedObjectUnavailable("Object has been disposed or heap is unavailable");
         }
 
+        #region Unsupported
+        [Obsolete("The method is unsupported")]
         public override bool Equals(object? obj)
         {
             throw new NotSupportedException(nameof(Equals));
         }
 
+        [Obsolete("The method is unsupported")]
         public override int GetHashCode()
         {
             throw new NotSupportedException(nameof(GetHashCode));
         }
 
+        [Obsolete("The method is unsupported")]
         public override string? ToString()
         {
             throw new NotImplementedException(nameof(ToString));
         }
+        #endregion
 
         public static implicit operator IntPtr(Unmanaged<TValue> unmanagedValue) => unmanagedValue.Ptr;
         public static unsafe implicit operator TValue*(Unmanaged<TValue> unmanagedValue) => (TValue*)unmanagedValue.Ptr;

@@ -23,13 +23,14 @@ namespace Run
 
             using (var heap = WindowsPrivateHeapIndirect.Create())
             {
-                using (var mem = heap.Alloc<Test>(100000000))
+                using (var list = heap.AllocExpandable<Test>())
                 {
                     watch.Start();
                     for (int i = 0; i < 100000000; i++)
                     {
-                        mem[i] = new Test();
+                        list.Add(new Test());
                     }
+
                     watch.Stop();
                     var ms = watch.ElapsedMilliseconds;
                     Console.WriteLine($"Execution Time: {ms} ms");
