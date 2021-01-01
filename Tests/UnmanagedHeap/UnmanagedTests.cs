@@ -55,6 +55,11 @@ namespace Tests.UnmanagedHeap
             Assert.NotEqual(IntPtr.Zero,mem);
             Assert.False((UnmanagedTest*)IntPtr.Zero == mem);
             Assert.Equal(_heap,mem.Heap);
+
+            var item = new UnmanagedTest() {I1 = 100, I2 = 200};
+            mem.First = item;
+            Assert.Equal(item,mem[0]);
+
         }
 
         [Theory]

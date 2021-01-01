@@ -1,5 +1,4 @@
 ﻿using System;
-using Heapy.Core.Enum;
 using Heapy.Core.Exception;
 using Heapy.Core.Extension;
 using Heapy.Core.Interface;
