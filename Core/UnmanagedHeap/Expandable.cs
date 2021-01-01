@@ -88,10 +88,20 @@ namespace Heapy.Core.UnmanagedHeap
         public TValue this[int index]
         {
             get => GetByIndex(index);
-            set => SetByIndex(index, value);
         }
 
-
+        /// <summary>
+        /// Sets item at index to <see cref="value"/>
+        /// </summary>
+        /// <param name="index">Index of item</param>
+        /// <param name="value">value to set</param>
+        public void Update(int index, TValue value)
+        {
+            ThrowIfNotAvailable();
+            ThrowIfOutOfRange(index);
+            _memory[index] = value;
+        }
+        
         /// <summary>
         /// Adds an item to the end of the memory block
         /// </summary>
@@ -167,7 +177,7 @@ namespace Heapy.Core.UnmanagedHeap
         /// Once span is returned memory block will have fixed size
         /// </summary>
         /// <returns><see cref="Span{T}"/></returns>
-        internal Span<TValue> AsSpan()
+        public Span<TValue> AsSpan()
         {
             _isFixed = true;
             return new(_memory, _count);
@@ -178,13 +188,6 @@ namespace Heapy.Core.UnmanagedHeap
             ThrowIfNotAvailable();
             ThrowIfOutOfRange(index);
             return _memory[index];
-        }
-
-        private void SetByIndex(int index, TValue value)
-        {
-            ThrowIfNotAvailable();
-            ThrowIfOutOfRange(index);
-            _memory[index] = value;
         }
 
         private void ThrowIfOutOfRange(int index)
