@@ -2,5 +2,6 @@
 *.pdb
 *.cache
 .vs
+.idea
 **/obj/*
 **/bin/*
