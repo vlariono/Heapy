@@ -35,7 +35,7 @@ namespace Tests.UnmanagedHeap
             Assert.Equal(5,items.Length);
             Assert.Equal(0,items.Count);
             Assert.Equal(_heap,items.Heap);
-            Assert.Equal(false,items.IsFixed);
+            Assert.False(items.IsFixed);
         }
 
         [Fact]

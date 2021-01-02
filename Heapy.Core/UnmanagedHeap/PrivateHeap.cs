@@ -2,6 +2,7 @@
 using System.Runtime.CompilerServices;
 using Heapy.Core.Enum;
 using Heapy.Core.Exception;
+using Heapy.Core.Extension;
 using Heapy.Core.Interface;
 
 namespace Heapy.Core.UnmanagedHeap
@@ -46,6 +47,8 @@ namespace Heapy.Core.UnmanagedHeap
             Dispose();
         }
 
+        public bool IsAvailable => !_disposed;
+
         /// <inheritdoc />
         public Unmanaged<TValue> Alloc<TValue>() where TValue : unmanaged
         {
@@ -88,12 +91,9 @@ namespace Heapy.Core.UnmanagedHeap
             return _handle != IntPtr.Zero && _privateHeapNative.HeapFree(_handle, 0, memory);
         }
 
-        public void ThrowIfNotAvailable()
+        private void ThrowIfNotAvailable()
         {
-            if (_disposed)
-            {
-                throw new UnmanagedHeapUnavailable("Private heap is unavailable");
-            }
+            UnmanagedExtension.ThrowIfNotAvailable(this);
         }
 
         private static void ThrowIfOutOfMemory(IntPtr handle)

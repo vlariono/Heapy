@@ -34,6 +34,8 @@ namespace Heapy.Core.UnmanagedHeap
             return Heap;
         }
 
+        public bool IsAvailable => true;
+
         /// <inheritdoc />
         public Unmanaged<TValue> Alloc<TValue>() where TValue : unmanaged
         {
@@ -73,11 +75,6 @@ namespace Heapy.Core.UnmanagedHeap
         {
             Marshal.FreeHGlobal(memory);
             return true;
-        }
-
-        /// <inheritdoc />
-        public void ThrowIfNotAvailable()
-        {
         }
     }
 }

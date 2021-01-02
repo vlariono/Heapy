@@ -8,6 +8,11 @@ namespace Heapy.Core.Interface
     public interface IUnmanagedHeap : IDisposable
     {
         /// <summary>
+        /// Indicates heap availability
+        /// </summary>
+        bool IsAvailable { get; }
+        
+        /// <summary>
         /// Allocates a block of memory from a heap. The allocated memory is not movable
         /// </summary>
         /// <typeparam name="TValue">The type of items in unmanaged memory</typeparam>
@@ -56,10 +61,5 @@ namespace Heapy.Core.Interface
         /// <param name="memory">A pointer to the memory block to be freed. </param>
         /// <returns>If the function succeeds - true, otherwise - false</returns>
         bool Free(IntPtr memory);
-
-        /// <summary>
-        /// Throws <see cref="UnmanagedHeapUnavailable"/> exception if heap is not available
-        /// </summary>
-        void ThrowIfNotAvailable();
     }
 }

@@ -136,14 +136,13 @@ namespace Heapy.Core.UnmanagedHeap
             _span.CopyTo(span);
         }
 
-        public void ThrowIfNotAvailable()
+        private void ThrowIfNotAvailable()
         {
+            _heap.ThrowIfNotAvailable();
             if (_disposed)
             {
                 throw new UnmanagedObjectUnavailable("Object has been disposed or heap is unavailable");
             }
-
-            _heap.ThrowIfNotAvailable();
         }
 
         #region Unsupported

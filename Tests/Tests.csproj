@@ -33,7 +33,7 @@
   </ItemGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\Core\Heapy.Core.csproj" />
+    <ProjectReference Include="..\Heapy.Core\Heapy.Core.csproj" />
   </ItemGroup>
 
 </Project>

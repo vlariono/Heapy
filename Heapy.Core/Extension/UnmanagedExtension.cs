@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Runtime.CompilerServices;
+using Heapy.Core.Exception;
 using Heapy.Core.Interface;
 using Heapy.Core.UnmanagedHeap;
 
@@ -41,6 +42,14 @@ namespace Heapy.Core.Extension
         public static Expandable<TValue> AllocExpandable<TValue>(this IUnmanagedHeap heap,int length) where TValue:unmanaged
         {
             return new(Math.Max(4,length), heap);
+        }
+        
+        internal static void ThrowIfNotAvailable(this IUnmanagedHeap heap)
+        {
+            if (!heap.IsAvailable)
+            {
+                throw new UnmanagedHeapUnavailable("Private heap is unavailable");
+            }
         }
     }
 }

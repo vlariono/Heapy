@@ -95,7 +95,7 @@ namespace Heapy.Core.UnmanagedHeap
         /// </summary>
         /// <param name="index">Index of item</param>
         /// <param name="value">value to set</param>
-        public void Update(int index, TValue value)
+        public void Set(int index, TValue value)
         {
             ThrowIfNotAvailable();
             ThrowIfOutOfRange(index);
@@ -200,11 +200,11 @@ namespace Heapy.Core.UnmanagedHeap
 
         private void ThrowIfNotAvailable()
         {
+            _heap.ThrowIfNotAvailable();
             if (_disposed)
             {
                 throw new UnmanagedObjectUnavailable();
             }
-            _heap.ThrowIfNotAvailable();
         }
 
         #region Unsupported
