@@ -101,7 +101,7 @@ namespace Heapy.Core.UnmanagedHeap
 
         private void ThrowIfNotAvailable()
         {
-            if(_memory == default)
+            if (_memory == default)
             {
                 throw new UnmanagedObjectUnavailable("Unmanaged object is unavailable");
             }
@@ -152,7 +152,21 @@ namespace Heapy.Core.UnmanagedHeap
         public static implicit operator IntPtr(Unmanaged<TValue> unmanagedValue) => unmanagedValue.Ptr;
         public static implicit operator Span<TValue>(Unmanaged<TValue> unmanagedValue) => unmanagedValue.AsSpan();
         public static implicit operator ReadOnlySpan<TValue>(Unmanaged<TValue> unmanagedValue) => unmanagedValue.AsSpan();
+
+        /// <summary>
+        /// Compares objects by reference
+        /// </summary>
+        /// <param name="first">First object</param>
+        /// <param name="second">Second object</param>
+        /// <returns>Returns true if two objects refer to the same memory block</returns>
         public static bool operator ==(Unmanaged<TValue> first, Unmanaged<TValue> second) => first._memory == second._memory;
+
+        /// <summary>
+        /// Compares objects by reference
+        /// </summary>
+        /// <param name="first">First object</param>
+        /// <param name="second">Second object</param>
+        /// <returns>Returns true if two objects do not refer to the same memory block</returns>
         public static bool operator !=(Unmanaged<TValue> first, Unmanaged<TValue> second) => first._memory != second._memory;
     }
 }

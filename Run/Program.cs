@@ -14,7 +14,6 @@ namespace Run
     {
         private static void Main(string[] args)
         {
-            using var unmanagedObject = Unmanaged<Test>.Alloc();
         }
     }
 }
