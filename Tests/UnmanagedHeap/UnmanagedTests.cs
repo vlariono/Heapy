@@ -1,15 +1,12 @@
 ﻿using System;
-using Heapy.Core.Enum;
-using Heapy.Core.Exception;
-using Heapy.Core.Interface;
+using Heapy.Core.Exceptions;
 using Heapy.Core.UnmanagedHeap;
 using Xunit;
 
 namespace Tests.UnmanagedHeap
 {
-    public class UnmanagedTests:IDisposable
+    public class UnmanagedTests
     {
-        private readonly IUnmanagedHeap _heap;
         private readonly UnmanagedTest[] _array;
 
         private struct UnmanagedTest
@@ -20,7 +17,6 @@ namespace Tests.UnmanagedHeap
 
         public UnmanagedTests()
         {
-            _heap = ProcessHeap.Create();
             _array = new UnmanagedTest[]
             {
                 new()
@@ -41,25 +37,12 @@ namespace Tests.UnmanagedHeap
             };
         }
 
-        public void Dispose()
-        {
-            _heap.Dispose();
-        }
-
         [Fact]
         public unsafe void UnmanagedProperties_IsCorrect()
         {
-            using var mem = _heap.Alloc<UnmanagedTest>(50);
-            Assert.Equal(50,mem.Length);
+            using var mem = Unmanaged<UnmanagedTest>.Alloc(50);
             Assert.NotEqual(IntPtr.Zero,mem.Ptr);
             Assert.NotEqual(IntPtr.Zero,mem);
-            Assert.False((UnmanagedTest*)IntPtr.Zero == mem);
-            Assert.Equal(_heap,mem.Heap);
-
-            var item = new UnmanagedTest() {I1 = 100, I2 = 200};
-            mem.First = item;
-            Assert.Equal(item,mem[0]);
-
         }
 
         [Theory]
@@ -68,7 +51,7 @@ namespace Tests.UnmanagedHeap
         [InlineData(2)]
         public void UnmanagedIndexer_ReturnsValue(int index)
         {
-            using var mem = _heap.Alloc<UnmanagedTest>(_array.Length);
+            using var mem = Unmanaged<UnmanagedTest>.Alloc(_array.Length);
             mem[index] = _array[index];
             Assert.Equal(_array[index],mem[index]);
         }
@@ -78,7 +61,7 @@ namespace Tests.UnmanagedHeap
         [InlineData(4)]
         public void UnmanagedIndexer_ThrowsOurOfRange(int index)
         {
-            using var mem = _heap.Alloc<UnmanagedTest>(2);
+            using var mem = Unmanaged<UnmanagedTest>.Alloc(2);
             try
             {
                 var m = mem[index];
@@ -92,46 +75,17 @@ namespace Tests.UnmanagedHeap
         [Fact]
         public void UnmanagedIndexer_AllowsToChangeProperty()
         {
-            using var mem = _heap.Alloc<UnmanagedTest>(2);
+            using var mem = Unmanaged<UnmanagedTest>.Alloc(2);
             mem[0].I1 = 10;
             mem[1].I2 = 21;
             Assert.Equal(10,mem[0].I1);
             Assert.Equal(21,mem[1].I2);
         }
 
-        [Theory]
-        [InlineData(0)]
-        [InlineData(1)]
-        [InlineData(2)]
-        public void IndexOf_ReturnsCorrectIndex(int index)
-        {
-            using var mem = _heap.Alloc<UnmanagedTest>(_array.Length);
-            _array.AsSpan().CopyTo(mem);
-            var resultIndex = mem.IndexOf(_array[index]);
-            Assert.Equal(index,resultIndex);
-
-            var indexOfDefault = mem.IndexOf(default);
-            Assert.Equal(-1,indexOfDefault);
-        }
-
-        [Theory]
-        [InlineData(0)]
-        [InlineData(1)]
-        [InlineData(2)]
-        public void RemoveAt_RemovesCorrectly(int index)
-        {
-            using var mem = _heap.Alloc<UnmanagedTest>(_array.Length);
-            _array.AsSpan().CopyTo(mem);
-            var requiredValue = index < _array.Length - 1 ? _array[index + 1] : default;
-            mem.RemoveAt(index);
-            var currentValue = mem[index];
-            Assert.Equal(requiredValue,currentValue);
-        }
-
         [Fact]
         public void RemoveAt_ThrowsObjectUnavailable()
         {
-            var mem = _heap.Alloc<UnmanagedTest>();
+            var mem = new Unmanaged<UnmanagedTest>();
             mem.Dispose();
             try
             {
@@ -163,34 +117,6 @@ namespace Tests.UnmanagedHeap
             try
             {
                 var temp = mem.AsSpan();
-            }
-            catch (Exception e)
-            {
-                Assert.True(e is UnmanagedObjectUnavailable);
-            }
-
-            try
-            {
-                var temp = mem.IndexOf(default);
-            }
-            catch (Exception e)
-            {
-                Assert.True(e is UnmanagedObjectUnavailable);
-            }
-
-            try
-            {
-                mem.RemoveAt(0);
-            }
-            catch (Exception e)
-            {
-                Assert.True(e is UnmanagedObjectUnavailable);
-            }
-
-            try
-            {
-                var array = new UnmanagedTest[2];
-                mem.CopyTo(array);
             }
             catch (Exception e)
             {

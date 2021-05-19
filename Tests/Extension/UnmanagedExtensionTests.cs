@@ -30,6 +30,12 @@ namespace Tests.Extension
             public long L2 { get; set; }
         }
 
+                private unsafe struct UnmanagedTest5
+        {
+            public short S1 { get; set; }
+            public byte B2 { get; set; }
+        }
+
         [Fact]
         public unsafe void EqualsByValue_Equals()
         {
@@ -50,6 +56,10 @@ namespace Tests.Extension
             value7.Bytes[1] = 112;
             value8.Bytes[1] = 112;
             Assert.True(value7.EqualsByValue(ref value8));
+
+            var value9 = new UnmanagedTest5() { S1 = 100, B2 = 15 };
+            var value10 = new UnmanagedTest5() { S1 = 100, B2 = 15 };
+            Assert.True(value9.EqualsByValue(ref value10));
         }
 
         [Fact]

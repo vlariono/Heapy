@@ -1,13 +1,24 @@
 ﻿using System;
+using System.Net.Http.Headers;
 using System.Runtime.CompilerServices;
-using Heapy.Core.Exception;
-using Heapy.Core.Interface;
 using Heapy.Core.UnmanagedHeap;
 
 namespace Heapy.Core.Extension
 {
     public static class UnmanagedExtension
     {
+        private static ulong ToULong<TValue>(this TValue value) where TValue : unmanaged
+        {
+            return Unsafe.SizeOf<TValue>() switch
+            {
+                1 => Unsafe.As<TValue, byte>(ref value),
+                2 => Unsafe.As<TValue, ushort>(ref value),
+                4 => Unsafe.As<TValue, uint>(ref value),
+                8 => Unsafe.As<TValue, ulong>(ref value),
+                _ => throw new InvalidCastException()
+            };
+        }
+
         /// <summary>
         /// Determines whether two values are equal
         /// This method doesn't depends on <see cref="IEquatable{T}"/>
@@ -15,14 +26,14 @@ namespace Heapy.Core.Extension
         /// <typeparam name="TValue">Type of value item</typeparam>
         /// <param name="firstValue">First value</param>
         /// <param name="secondValue">The value to compare with first value</param>
-        /// <returns></returns>
+        /// <returns><see cref="bool"/></returns>
         public static unsafe bool EqualsByValue<TValue>(this ref TValue firstValue, ref TValue secondValue) where TValue : unmanaged
         {
             var valueSize = sizeof(TValue);
-            if (valueSize <= 8)
+            if (valueSize <= sizeof(IntPtr))
             {
-                ref var first = ref Unsafe.As<TValue,ulong>(ref firstValue);
-                ref var second = ref Unsafe.As<TValue,ulong>(ref secondValue);
+                var first = firstValue.ToULong();
+                var second = secondValue.ToULong();
 
                 return first == second;
             }
@@ -34,22 +45,35 @@ namespace Heapy.Core.Extension
             return sourceSpan.SequenceEqual(otherSpan);
         }
 
-        public static Expandable<TValue> AllocExpandable<TValue>(this IUnmanagedHeap heap) where TValue:unmanaged
+        /// <summary>
+        /// Determines whether two sequences are equal
+        /// </summary>
+        /// <typeparam name="TValue">The type of elements in the sequence</typeparam>
+        /// <param name="first">The first sequence to compare</param>
+        /// <param name="second">The second sequence to compare</param>
+        /// <returns><see cref="bool"/></returns>
+        public static unsafe bool SequenceEqual<TValue>(this Unmanaged<TValue> first, Unmanaged<TValue> second) where TValue : unmanaged
         {
-            return new(4, heap);
-        }
-
-        public static Expandable<TValue> AllocExpandable<TValue>(this IUnmanagedHeap heap,int length) where TValue:unmanaged
-        {
-            return new(Math.Max(4,length), heap);
-        }
-        
-        internal static void ThrowIfNotAvailable(this IUnmanagedHeap heap)
-        {
-            if (!heap.IsAvailable)
+            if (first.Length != second.Length)
             {
-                throw new UnmanagedHeapUnavailable("Private heap is unavailable");
+                return false;
             }
+
+            if (first == second)
+            {
+                return true;
+            }
+
+            var length = sizeof(TValue) * first.Length;
+            for (var i = 0; i < length; i++)
+            {
+                if (!EqualsByValue(ref first[i], ref second[i]))
+                {
+                    return false;
+                }
+            }
+
+            return true;
         }
     }
 }
