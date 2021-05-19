@@ -1,5 +1,4 @@
 ﻿using System;
-using System.Net.Http.Headers;
 using System.Runtime.CompilerServices;
 using Heapy.Core.UnmanagedHeap;
 

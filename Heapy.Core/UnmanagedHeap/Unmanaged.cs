@@ -1,5 +1,4 @@
 using System;
-using System.Collections.Specialized;
 using System.Runtime.InteropServices;
 using Heapy.Core.Exceptions;
 namespace Heapy.Core.UnmanagedHeap
@@ -14,11 +13,10 @@ namespace Heapy.Core.UnmanagedHeap
         private readonly IntPtr _memory;
         private bool _disposed;
 
-        private unsafe Unmanaged(int count) : this()
+        private unsafe Unmanaged(int length) : this()
         {
-            var length = sizeof(TValue) * count;
-            _memory = Marshal.AllocHGlobal(length);
-            _span = new Span<TValue>((TValue*)_memory, count);
+            _memory = Marshal.AllocHGlobal(sizeof(TValue) * length);
+            _span = new Span<TValue>((TValue*)_memory, length);
         }
 
         /// <summary>
@@ -30,9 +28,9 @@ namespace Heapy.Core.UnmanagedHeap
         /// <summary>
         /// Allocates a block of memory from unmanaged heap
         /// </summary>
-        /// <param name="count">Number of items in the memory block</param>
+        /// <param name="length">Number of items in the memory block</param>
         /// <returns><see cref="Unmanaged{TValue}"/></returns>
-        public static Unmanaged<TValue> Alloc(int count) => new(count);
+        public static Unmanaged<TValue> Alloc(int length) => new(length);
 
         public void Dispose()
         {
