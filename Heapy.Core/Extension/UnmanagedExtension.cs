@@ -48,9 +48,9 @@ namespace Heapy.Core.Extension
         /// <returns><see cref="bool"/></returns>
         public static unsafe bool EqualsByValue<TValue>(this ref TValue firstValue, ref TValue secondValue) where TValue : unmanaged
         {
-            fixed (TValue* sourcePtr = &firstValue,destinationPtr = &secondValue)
+            fixed (TValue* firstPtr = &firstValue, secondPtr = &secondValue)
             {
-                return EqualsByValue<TValue>((IntPtr)sourcePtr, (IntPtr)destinationPtr, 1);
+                return EqualsByValue<TValue>((IntPtr)firstPtr, (IntPtr)secondPtr, 1);
             }
         }
 
@@ -74,6 +74,19 @@ namespace Heapy.Core.Extension
             }
 
             return EqualsByValue<TValue>(first, second, first.Length);
+        }
+
+        /// <summary>
+        /// Copies value to unmanaged heap
+        /// </summary>
+        /// <typeparam name="TValue">Type of object to copy into unmanaged heap</typeparam>
+        /// <param name="value">Value to copy into unmanaged heap</param>
+        /// <returns><see cref="Unmanaged{TValue}"/></returns>
+        public static Unmanaged<TValue> ToUnmanagedHeap<TValue>(this TValue value) where TValue : unmanaged
+        {
+            var memory = Unmanaged<TValue>.Alloc();
+            memory[0] = value;
+            return memory;
         }
     }
 }

@@ -155,5 +155,17 @@ namespace Tests.Extension
             unmanagedValue8[0] = 8;
             Assert.False(unmanagedValue7.SequenceEqual(unmanagedValue8));
         }
+
+[Fact]
+        public void ToUnmanagedHeap_Alloc()
+        {
+            using var unmanagedObject1 = 55.ToUnmanagedHeap();
+            using var unmanagedObject2 = 55.ToUnmanagedHeap();
+
+            Assert.False(unmanagedObject1 == unmanagedObject2);
+            Assert.True(unmanagedObject1.Length == 1);
+            Assert.True(unmanagedObject2.Length == 1);
+            Assert.True(unmanagedObject1[0] == unmanagedObject2[0]);
+        }
     }
 }
