@@ -116,12 +116,6 @@ namespace Heapy.Core.UnmanagedHeap
         {
             throw new NotSupportedException(nameof(GetHashCode));
         }
-
-        [Obsolete("The method is unsupported")]
-        public override string? ToString()
-        {
-            throw new NotSupportedException(nameof(ToString));
-        }
         #endregion
 
         public static implicit operator IntPtr(Unmanaged<TValue> unmanagedValue) => unmanagedValue.Ptr;
