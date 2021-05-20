@@ -6,15 +6,35 @@ namespace Heapy.Core.Extension
 {
     public static class UnmanagedExtension
     {
-        private static ulong ToULong<TValue>(this TValue value) where TValue : unmanaged
+        private static unsafe int GetBlockSize(int bytesCount)
         {
-            return Unsafe.SizeOf<TValue>() switch
+            var ptrSize = sizeof(IntPtr);
+            while (bytesCount % ptrSize != 0)
             {
-                1 => Unsafe.As<TValue, byte>(ref value),
-                2 => Unsafe.As<TValue, ushort>(ref value),
-                4 => Unsafe.As<TValue, uint>(ref value),
-                8 => Unsafe.As<TValue, ulong>(ref value),
-                _ => throw new InvalidCastException()
+                ptrSize >>= 1;
+            }
+            return ptrSize;
+        }
+
+        private static unsafe bool MemoryEquals<TValue>(IntPtr first, IntPtr second, int length) where TValue : unmanaged, IEquatable<TValue>
+        {
+            var sourceSpan = new Span<TValue>((void*)first, length);
+            var otherSpan = new Span<TValue>((void*)second, length);
+            return sourceSpan.SequenceEqual(otherSpan);
+        }
+
+        private static unsafe bool EqualsByValue<TValue>(IntPtr first, IntPtr second, int length) where TValue : unmanaged
+        {
+            var bytesCount = sizeof(TValue) * length;
+            var blockSize = GetBlockSize(bytesCount);
+            var memoryLength = bytesCount / blockSize;
+            return blockSize switch
+            {
+                8 => MemoryEquals<ulong>(first, second, memoryLength),
+                4 => MemoryEquals<uint>(first, second, memoryLength),
+                2 => MemoryEquals<ushort>(first, second, memoryLength),
+                1 => MemoryEquals<byte>(first, second, memoryLength),
+                _ => throw new InvalidOperationException("Failed to compare memory blocks"),
             };
         }
 
@@ -28,20 +48,9 @@ namespace Heapy.Core.Extension
         /// <returns><see cref="bool"/></returns>
         public static unsafe bool EqualsByValue<TValue>(this ref TValue firstValue, ref TValue secondValue) where TValue : unmanaged
         {
-            var valueSize = sizeof(TValue);
-            if (valueSize <= sizeof(IntPtr))
-            {
-                var first = firstValue.ToULong();
-                var second = secondValue.ToULong();
-
-                return first == second;
-            }
-
             var sourcePtr = Unsafe.AsPointer(ref firstValue);
             var destinationPtr = Unsafe.AsPointer(ref secondValue);
-            var sourceSpan = new Span<byte>(sourcePtr, valueSize);
-            var otherSpan = new Span<byte>(destinationPtr, valueSize);
-            return sourceSpan.SequenceEqual(otherSpan);
+            return EqualsByValue<TValue>((IntPtr)sourcePtr, (IntPtr)destinationPtr, 1);
         }
 
         /// <summary>
@@ -51,7 +60,7 @@ namespace Heapy.Core.Extension
         /// <param name="first">The first sequence to compare</param>
         /// <param name="second">The second sequence to compare</param>
         /// <returns><see cref="bool"/></returns>
-        public static unsafe bool SequenceEqual<TValue>(this Unmanaged<TValue> first, Unmanaged<TValue> second) where TValue : unmanaged
+        public static bool SequenceEqual<TValue>(this Unmanaged<TValue> first, Unmanaged<TValue> second) where TValue : unmanaged
         {
             if (first.Length != second.Length)
             {
@@ -63,16 +72,7 @@ namespace Heapy.Core.Extension
                 return true;
             }
 
-            var length = sizeof(TValue) * first.Length;
-            for (var i = 0; i < length; i++)
-            {
-                if (!EqualsByValue(ref first[i], ref second[i]))
-                {
-                    return false;
-                }
-            }
-
-            return true;
+            return EqualsByValue<TValue>(first, second, first.Length);
         }
     }
 }

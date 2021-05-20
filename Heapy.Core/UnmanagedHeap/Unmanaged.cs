@@ -1,6 +1,7 @@
 using System;
 using System.Runtime.InteropServices;
 using Heapy.Core.Exceptions;
+
 namespace Heapy.Core.UnmanagedHeap
 {
     /// <summary>
@@ -17,6 +18,7 @@ namespace Heapy.Core.UnmanagedHeap
         {
             _memory = Marshal.AllocHGlobal(sizeof(TValue) * length);
             _span = new Span<TValue>((TValue*)_memory, length);
+            _span.Fill(default);
         }
 
         /// <summary>
@@ -39,14 +41,6 @@ namespace Heapy.Core.UnmanagedHeap
                 Marshal.FreeHGlobal(_memory);
                 _disposed = true;
             }
-        }
-
-        /// <summary>
-        /// Returns an enumerator
-        /// </summary>
-        public Enumerator GetEnumerator()
-        {
-            return new Enumerator(this);
         }
 
         /// <summary>
@@ -107,23 +101,6 @@ namespace Heapy.Core.UnmanagedHeap
             if (_disposed)
             {
                 throw new ObjectDisposedException("Object has been disposed");
-            }
-        }
-
-        public ref struct Enumerator
-        {
-            private readonly Unmanaged<TValue> _memory;
-            private int _index;
-            public Enumerator(Unmanaged<TValue> memory)
-            {
-                _memory = memory;
-                _index = -1;
-            }
-            public ref TValue Current => ref _memory[_index];
-
-            public bool MoveNext()
-            {
-                return ++_index < _memory.Length;
             }
         }
 

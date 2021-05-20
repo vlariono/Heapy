@@ -1,4 +1,5 @@
 ﻿using Heapy.Core.Extension;
+using Heapy.Core.UnmanagedHeap;
 using Xunit;
 
 namespace Tests.Extension
@@ -30,7 +31,7 @@ namespace Tests.Extension
             public long L2 { get; set; }
         }
 
-                private unsafe struct UnmanagedTest5
+        private unsafe struct UnmanagedTest5
         {
             public short S1 { get; set; }
             public byte B2 { get; set; }
@@ -82,6 +83,66 @@ namespace Tests.Extension
             value7.Bytes[0] = 112;
             value8.Bytes[1] = 112;
             Assert.False(value7.EqualsByValue(ref value8));
+
+            var value9 = new UnmanagedTest5() { S1 = 150, B2 = 15 };
+            var value10 = new UnmanagedTest5() { S1 = 100, B2 = 15 };
+            Assert.False(value9.EqualsByValue(ref value10));
+        }
+
+        [Fact]
+        public void SequenceEqual_Equals()
+        {
+            using var unmanagedValue1 = Unmanaged<UnmanagedTest1>.Alloc();
+            var unmanagedValue2 = unmanagedValue1;
+            Assert.True(unmanagedValue1.SequenceEqual(unmanagedValue2));
+
+            using var unmanagedValue3 = Unmanaged<UnmanagedTest1>.Alloc();
+            using var unmanagedValue4 = Unmanaged<UnmanagedTest1>.Alloc();
+            unmanagedValue3[0] = new UnmanagedTest1 { I1 = 100, I2 = 200 };
+            unmanagedValue4[0] = new UnmanagedTest1 { I1 = 100, I2 = 200 };
+            Assert.True(unmanagedValue3.SequenceEqual(unmanagedValue4));
+
+            using var unmanagedValue5 = Unmanaged<UnmanagedTest1>.Alloc(2);
+            using var unmanagedValue6 = Unmanaged<UnmanagedTest1>.Alloc(2);
+            unmanagedValue5[0] = new UnmanagedTest1 { I1 = 100, I2 = 200 };
+            unmanagedValue5[1] = new UnmanagedTest1 { I1 = 101, I2 = 201 };
+            unmanagedValue6[0] = new UnmanagedTest1 { I1 = 100, I2 = 200 };
+            unmanagedValue6[1] = new UnmanagedTest1 { I1 = 101, I2 = 201 };
+            Assert.True(unmanagedValue5.SequenceEqual(unmanagedValue6));
+
+            using var unmanagedValue7 = Unmanaged<short>.Alloc();
+            using var unmanagedValue8 = Unmanaged<short>.Alloc();
+            unmanagedValue7[0] = 7;
+            unmanagedValue8[0] = 7;
+            Assert.True(unmanagedValue7.SequenceEqual(unmanagedValue8));
+        }
+
+        [Fact]
+        public void SequenceEqual_NotEquals()
+        {
+            using var unmanagedValue1 = Unmanaged<UnmanagedTest1>.Alloc();
+            using var unmanagedValue2 = Unmanaged<UnmanagedTest1>.Alloc(2);
+            Assert.False(unmanagedValue1.SequenceEqual(unmanagedValue2));
+
+            using var unmanagedValue3 = Unmanaged<UnmanagedTest1>.Alloc();
+            using var unmanagedValue4 = Unmanaged<UnmanagedTest1>.Alloc();
+            unmanagedValue3[0] = new UnmanagedTest1 { I1 = 100, I2 = 200 };
+            unmanagedValue4[0] = new UnmanagedTest1 { I1 = 150, I2 = 250 };
+            Assert.False(unmanagedValue3.SequenceEqual(unmanagedValue4));
+
+            using var unmanagedValue5 = Unmanaged<UnmanagedTest1>.Alloc(2);
+            using var unmanagedValue6 = Unmanaged<UnmanagedTest1>.Alloc(2);
+            unmanagedValue5[0] = new UnmanagedTest1 { I1 = 100, I2 = 200 };
+            unmanagedValue5[1] = new UnmanagedTest1 { I1 = 101, I2 = 201 };
+            unmanagedValue6[0] = new UnmanagedTest1 { I1 = 100, I2 = 200 };
+            unmanagedValue6[1] = new UnmanagedTest1 { I1 = 150, I2 = 250 };
+            Assert.False(unmanagedValue5.SequenceEqual(unmanagedValue6));
+
+            using var unmanagedValue7 = Unmanaged<short>.Alloc();
+            using var unmanagedValue8 = Unmanaged<short>.Alloc();
+            unmanagedValue7[0] = 7;
+            unmanagedValue8[0] = 8;
+            Assert.False(unmanagedValue7.SequenceEqual(unmanagedValue8));
         }
     }
 }
