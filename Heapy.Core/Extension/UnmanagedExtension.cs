@@ -48,9 +48,10 @@ namespace Heapy.Core.Extension
         /// <returns><see cref="bool"/></returns>
         public static unsafe bool EqualsByValue<TValue>(this ref TValue firstValue, ref TValue secondValue) where TValue : unmanaged
         {
-            var sourcePtr = Unsafe.AsPointer(ref firstValue);
-            var destinationPtr = Unsafe.AsPointer(ref secondValue);
-            return EqualsByValue<TValue>((IntPtr)sourcePtr, (IntPtr)destinationPtr, 1);
+            fixed (TValue* sourcePtr = &firstValue,destinationPtr = &secondValue)
+            {
+                return EqualsByValue<TValue>((IntPtr)sourcePtr, (IntPtr)destinationPtr, 1);
+            }
         }
 
         /// <summary>

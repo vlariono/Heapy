@@ -61,6 +61,9 @@ namespace Tests.Extension
             var value9 = new UnmanagedTest5() { S1 = 100, B2 = 15 };
             var value10 = new UnmanagedTest5() { S1 = 100, B2 = 15 };
             Assert.True(value9.EqualsByValue(ref value10));
+
+            var valueArray = new UnmanagedTest5[] { new() { S1 = 100, B2 = 15 }, new() { S1 = 100, B2 = 15 } };
+            Assert.True(valueArray[0].EqualsByValue(ref valueArray[1]));
         }
 
         [Fact]
