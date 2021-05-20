@@ -64,6 +64,14 @@ namespace Tests.Extension
 
             var valueArray = new UnmanagedTest5[] { new() { S1 = 100, B2 = 15 }, new() { S1 = 100, B2 = 15 } };
             Assert.True(valueArray[0].EqualsByValue(ref valueArray[1]));
+
+            using var unmanagedMemory1 = Unmanaged<UnmanagedTest4>.Alloc();
+            using var unmanagedMemory2 = Unmanaged<UnmanagedTest4>.Alloc();
+            unmanagedMemory1[0].L1 = 100;
+            unmanagedMemory1[0].L2 = 200;
+            unmanagedMemory2[0].L1 = 100;
+            unmanagedMemory2[0].L2 = 200;
+            Assert.True(unmanagedMemory1[0].EqualsByValue(ref unmanagedMemory2[0]));
         }
 
         [Fact]
